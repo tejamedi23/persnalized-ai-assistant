@@ -1,73 +1,58 @@
-# React + TypeScript + Vite
+# Orbit - Personalized AI Executive Assistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Orbit** is a next-generation productivity workspace that unifies your calendar, email, and travel plans into a single, intelligent "Stage."
 
-Currently, two official plugins are available:
+![Orbit Pro Preview](./public/orbit_pro_preview_thumb.png) 
+*(Note: Screen capture placeholder)*
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Key Features
 
-## React Compiler
+### 🧠 AI Lens
+A context-aware sidebar that lives alongside your work.
+- **Dynamic Insights**: Automatically detects "Deep Work" gaps, meeting overload, and schedule conflicts.
+- **Actionable Intelligence**: One-click actions to block focus time or resolve conflicts.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### 🎨 Orbit Pro Design System
+A premium, "World-Class" aesthetic designed for high-performers.
+- **Aurora Mesh Gradients**: Subtle, flowing backgrounds that feel alive.
+- **Glassmorphism**: High-quality frosted glass panels (`backdrop-blur-xl`) for depth.
+- **Linear-Style Polish**: "Hyper-crisp" borders and layered shadows for a sharp, professional look.
 
-## Expanding the ESLint configuration
+### ⚡ Smart Workspace
+- **Universal Search**: `Cmd+K` (concept) to find anything instantly.
+- **Travel Mode**: specialized view for trips, flights, and itineraries.
+- **Inbox Zero**: A cleaner, faster email experience.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## 🛠️ Tech Stack
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **React 18** (TypeScript)
+- **Vite** (Build Tool)
+- **Tailwind CSS** (Styling Engine)
+- **Framer Motion** (Animations)
+- **Lucide React** (Iconography)
+- **date-fns** (Time Management)
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+## 🏃‍♂️ Getting Started
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+1.  **Install dependencies**
+    ```bash
+    npm install
+    ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+2.  **Start the dev server**
+    ```bash
+    npm run dev
+    ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+3.  **Build for production**
+    ```bash
+    npm run build
+    ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 🔮 Future Roadmap
+- [ ] LLM Integration (OpenAI/Gemini API)
+- [ ] Voice Command Interface
+- [ ] Mobile Companion App
+
+---
+*Designed and Built by Teja Medi.*

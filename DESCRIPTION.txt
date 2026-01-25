@@ -1,0 +1,1 @@
+Orbit is my intelligent executive assistant dashboard that combines calendar management, email, and travel planning into a unified "Glass OS" interface. Featuring my custom 'Orbit Pro' design system, it uses AI to proactively identify deep work opportunities and schedule conflicts. Built with React, TypeScript, and Tailwind CSS.

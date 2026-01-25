@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept: Orbit (Premium)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        orbit: {
+                            base: '#030712', // Ultra dark background
+                            panel: '#111827', // Slightly lighter panels
+                            surface: '#1f2937', // Component surface
+                            accent: '#3b82f6', // Primary Blue
+                            glow: '#6366f1', // Secondary Indigo glow
+                        }
+                    },
+                    boxShadow: {
+                        'glow': '0 0 20px -5px rgba(99, 102, 241, 0.4)',
+                        'panel': '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+            background-image:
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(139, 92, 246, 0.08), transparent 25%);
+        }
+
+        /* Smooth scrolling and transitions */
+        * {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 10px;
+        }
+
+        /* Glass effect for floating elements */
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(59, 130, 246, 0.1), transparent);
+            border-left: 3px solid #3b82f6;
+            color: #60a5fa;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .ai-glow {
+            animation: pulse-glow 4s infinite ease-in-out;
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                box-shadow: 0 0 15px -5px rgba(99, 102, 241, 0.3);
+                border-color: rgba(99, 102, 241, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.6);
+                border-color: rgba(99, 102, 241, 0.6);
+            }
+        }
+    </style>
+</head>
+
+<body class="h-screen flex text-sm overflow-hidden antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
+
+    <!-- Sidebar: Command Center -->
+    <aside class="w-64 flex flex-col border-r border-white/5 bg-orbit-base/50 pt-6 pb-4">
+        <div class="px-6 mb-8 flex items-center gap-3">
+            <div class="relative w-8 h-8">
+                <div class="absolute inset-0 bg-blue-500 rounded-lg blur opacity-20"></div>
+                <!-- Mock Logo from v6 -->
+                <div
+                    class="relative w-full h-full bg-gradient-to-tr from-blue-600 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-xs shadow-glow">
+                    PA
+                </div>
+            </div>
+            <div>
+                <h1 class="font-semibold tracking-wide text-gray-100">Personalized</h1>
+                <p class="text-[10px] text-gray-500 font-mono tracking-widest uppercase">AI Assistant</p>
+            </div>
+        </div>
+
+        <nav class="flex-1 space-y-1 px-3">
+            <div class="px-3 mb-2 text-[10px] font-bold text-gray-600 uppercase tracking-widest">Workspace</div>
+            <a href="#"
+                class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-300 hover:bg-white/5 hover:text-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
+                Focus Schedule
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white group">
+                <svg class="w-4 h-4 group-hover:text-pink-400 transition-colors" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
+                Smart Inbox <span class="ml-auto bg-white/10 text-white text-[10px] px-1.5 py-0.5 rounded-md">4</span>
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-white/5 hover:text-white group">
+                <svg class="w-4 h-4 group-hover:text-teal-400 transition-colors" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                Travel Plans
+            </a>
+        </nav>
+
+        <div class="px-4 mt-auto">
+            <div
+                class="p-3 bg-gradient-to-br from-indigo-900/20 to-blue-900/10 border border-indigo-500/20 rounded-xl relative overflow-hidden group">
+                <div class="absolute inset-0 bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                </div>
+                <div class="flex items-center gap-2 mb-1 text-indigo-300 text-xs font-medium">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                    AI Insight
+                </div>
+                <p class="text-gray-400 text-xs leading-relaxed">
+                    Traffic to airport is heavier than usual. Leave by <span
+                        class="text-white hover:underline cursor-pointer">4:15 PM</span>.
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content: The "Stage" -->
+    <main class="flex-1 flex flex-col relative overflow-hidden">
+        <!-- Top Navigation -->
+        <header
+            class="h-16 flex items-center justify-between px-8 border-b border-white/5 bg-orbit-base/80 backdrop-blur-sm z-10">
+            <div class="flex items-center gap-4 text-gray-400 text-xs font-medium">
+                <span class="text-white">January 2026</span>
+                <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                <button class="hover:text-white transition-colors">&larr; Week 4 &rarr;</button>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <div class="relative">
+                    <input type="text" placeholder="Updates at 2 PM?"
+                        class="bg-white/5 border border-white/10 rounded-full pl-4 pr-10 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500/50 focus:bg-white/10 focus:ring-1 focus:ring-indigo-500/50 transition-all w-64">
+                    <svg class="w-3.5 h-3.5 text-gray-500 absolute right-3 top-1/2 -translate-y-1/2" fill="none"
+                        stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <button class="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-indigo-500 p-[1px] shadow-glow">
+                    <div class="w-full h-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                        <!-- User Avatar placeholder -->
+                        <span class="font-bold text-[10px]">TM</span>
+                    </div>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Island / Content -->
+        <div class="flex-1 p-8 overflow-y-auto">
+            <div class="max-w-5xl mx-auto space-y-8">
+
+                <!-- Hero Section: Today's "Heads Up" -->
+                <section class="grid grid-cols-3 gap-6">
+                    <div
+                        class="col-span-2 glass-panel p-6 rounded-2xl relative overflow-hidden card-hover border border-white/5">
+                        <div class="absolute top-0 right-0 p-6 opacity-50">
+                            <span class="text-6xl font-black text-white/5 select-none">25</span>
+                        </div>
+                        <h2 class="text-2xl font-light text-white mb-1">Good Afternoon, Teja</h2>
+                        <p class="text-gray-400 mb-6">You have 3 hours of deep work usage available today.</p>
+
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="flex-1 p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                                <div class="text-xs text-blue-400 mb-1 group-hover:text-blue-300">Next Meeting • 15m
+                                </div>
+                                <div class="font-semibold text-lg">Product Review</div>
+                                <div class="text-xs text-gray-500">Google Meet</div>
+                            </div>
+                            <div
+                                class="flex-1 p-4 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group">
+                                <div class="text-xs text-purple-400 mb-1 group-hover:text-purple-300">Start Task</div>
+                                <div class="font-semibold text-lg">Design Audit</div>
+                                <div class="text-xs text-gray-500">Figma</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-1 glass-panel p-6 rounded-2xl border border-white/5 flex flex-col card-hover">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="font-medium text-gray-300">Weather</h3>
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z">
+                                </path>
+                            </svg>
+                        </div>
+                        <div class="mt-auto">
+                            <div class="text-4xl font-light text-white">72°</div>
+                            <div class="text-sm text-gray-500">Sunny • Bengaluru</div>
+                            <div class="mt-4 h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-yellow-500 to-orange-500 w-3/4"></div>
+                            </div>
+                            <div class="mt-2 flex justify-between text-[10px] text-gray-600">
+                                <span>6 AM</span>
+                                <span>12 PM</span>
+                                <span>6 PM</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Tasks & Schedule Section -->
+                <section class="grid grid-cols-3 gap-8">
+                    <!-- Schedule List -->
+                    <div class="col-span-2 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-widest">Upcoming Schedule
+                            </h3>
+                            <button class="text-xs text-indigo-400 hover:text-indigo-300">+ Add Event</button>
+                        </div>
+
+                        <!-- Timeline Item -->
+                        <div class="relative pl-6 py-2 group">
+                            <div
+                                class="absolute left-0 top-0 bottom-0 w-px bg-white/10 group-hover:bg-indigo-500/50 transition-colors">
+                            </div>
+                            <div
+                                class="absolute left-[-4px] top-4 w-2 h-2 rounded-full bg-indigo-500 shadow-[0_0_10px_rgba(99,102,241,0.5)]">
+                            </div>
+
+                            <div
+                                class="glass-panel p-4 rounded-xl border border-white/5 hover:border-indigo-500/30 transition-all cursor-pointer">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-white">Q3 Strategy Meeting</span>
+                                    <span class="text-xs text-gray-500">2:00 PM</span>
+                                </div>
+                                <p class="text-xs text-gray-400 line-clamp-1">Sync with Sarah and John about the
+                                    upcoming launch requirements.</p>
+                                <div class="flex gap-2 mt-3">
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Strategy</span>
+                                    <span
+                                        class="px-2 py-0.5 rounded text-[10px] bg-white/5 text-gray-400 border border-white/5">High
+                                        Priority</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Timeline Item -->
+                        <div class="relative pl-6 py-2 group">
+                            <div class="absolute left-0 top-0 bottom-0 w-px bg-white/10"></div>
+                            <div class="absolute left-[-3px] top-4 w-1.5 h-1.5 rounded-full bg-gray-600"></div>
+
+                            <div
+                                class="glass-panel p-4 rounded-xl border border-white/5 hover:bg-white/5 transition-all cursor-pointer opacity-70 hover:opacity-100">
+                                <div class="flex justify-between mb-1">
+                                    <span class="font-medium text-gray-300">Deep Work: Coding</span>
+                                    <span class="text-xs text-gray-500">4:00 PM</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Implement Orbit design system.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assistant Chat -->
+                    <div
+                        class="col-span-1 flex flex-col h-[400px] glass-panel rounded-2xl border border-white/10 ai-glow relative overflow-hidden">
+                        <div
+                            class="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-indigo-500/10 to-transparent pointer-events-none">
+                        </div>
+
+                        <div
+                            class="p-4 border-b border-white/5 bg-white/5 flex justify-between items-center backdrop-blur-md z-10">
+                            <div class="flex items-center gap-2">
+                                <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                <span class="font-medium text-sm">Assistant</span>
+                            </div>
+                            <svg class="w-4 h-4 text-gray-400 cursor-pointer hover:text-white" fill="none"
+                                stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4">
+                                </path>
+                            </svg>
+                        </div>
+
+                        <div class="flex-1 p-4 space-y-4 overflow-y-auto">
+                            <!-- AI Message -->
+                            <div class="flex gap-3">
+                                <div
+                                    class="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0">
+                                </div>
+                                <div
+                                    class="bg-white/10 p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed text-gray-200">
+                                    I've prepared the travel itinerary for London. Flight BA249 is on time. Shall I book
+                                    the Uber?
+                                </div>
+                            </div>
+                            <!-- User Message -->
+                            <div class="flex gap-3 flex-row-reverse">
+                                <div
+                                    class="bg-indigo-600 p-3 rounded-2xl rounded-tr-none text-xs leading-relaxed text-white">
+                                    Yes, schedule it for 4:00 PM please.
+                                </div>
+                            </div>
+                            <!-- AI Message -->
+                            <div class="flex gap-3">
+                                <div
+                                    class="w-6 h-6 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-500 flex-shrink-0">
+                                </div>
+                                <div
+                                    class="bg-white/10 p-3 rounded-2xl rounded-tl-none text-xs leading-relaxed text-gray-200 flex flex-col gap-2">
+                                    <span>Done. Driver will arrive at 4:00 PM.</span>
+                                    <div
+                                        class="p-2 bg-black/20 rounded-lg flex items-center gap-2 border border-white/5">
+                                        <div
+                                            class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center text-xs">
+                                            🚗</div>
+                                        <div>
+                                            <div class="font-bold">Uber Black</div>
+                                            <div class="text-[10px] text-gray-400">Mercedes S-Class • 4 min away</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white/5 border-t border-white/5 relative z-10">
+                            <input type="text" placeholder="Type..."
+                                class="w-full bg-black/20 text-white text-xs px-4 py-3 rounded-xl border border-white/10 outline-none focus:border-indigo-500/50 transition-colors">
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>

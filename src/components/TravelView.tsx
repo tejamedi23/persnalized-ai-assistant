@@ -36,18 +36,19 @@ export const TravelView: React.FC = () => {
     }).sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
     return (
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900 p-6 overflow-y-auto custom-scrollbar h-full">
+        <div className="flex-1 bg-white p-6 overflow-y-auto custom-scrollbar h-full">
             <div className="max-w-6xl mx-auto space-y-6">
 
                 {/* Header */}
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Travel & Trips</h1>
-                        <p className="text-slate-500 dark:text-slate-400">Manage your itineraries, flights, and expenses</p>
+                        <h1 className="text-2xl font-bold text-slate-800">Travel & Trips</h1>
+                        <p className="text-slate-500">Manage your itineraries, flights, and expenses</p>
                     </div>
                     <button
                         onClick={() => setIsWizardOpen(true)}
-                        className="flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm font-medium transition-colors">
+                        className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/20 font-medium transition-all hover:-translate-y-0.5"
+                    >
                         <Plus className="h-5 w-5 mr-2" />
                         Plan New Trip
                     </button>
@@ -55,29 +56,29 @@ export const TravelView: React.FC = () => {
 
                 {/* Statistics Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Total Trips</span>
-                        <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">{totalTrips}</p>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Trips</span>
+                        <p className="text-2xl font-black text-slate-900 tracking-tight mt-1">{totalTrips}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Upcoming</span>
-                        <p className="text-2xl font-black text-indigo-600 tracking-tight">{upcomingTrips}</p>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Upcoming</span>
+                        <p className="text-2xl font-black text-blue-600 tracking-tight mt-1">{upcomingTrips}</p>
                     </div>
-                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span className="text-xs font-bold text-slate-500 uppercase">Total Budget</span>
-                        <p className="text-2xl font-black text-emerald-600 tracking-tight">${totalBudget.toFixed(2)}</p>
+                    <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Budget</span>
+                        <p className="text-2xl font-black text-emerald-600 tracking-tight mt-1">${totalBudget.toFixed(2)}</p>
                     </div>
                 </div>
 
                 {/* Filters */}
-                <div className="flex space-x-2 border-b border-slate-200 dark:border-slate-700 pb-1">
+                <div className="flex space-x-2 border-b border-slate-100 pb-1">
                     {(['upcoming', 'past', 'all'] as const).map(f => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${filter === f
-                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                                : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                            className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${filter === f
+                                ? 'border-blue-600 text-blue-600'
+                                : 'border-transparent text-slate-400 hover:text-slate-600'
                                 }`}
                         >
                             {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -87,14 +88,17 @@ export const TravelView: React.FC = () => {
 
                 {/* Trip List */}
                 {filteredTrips.length === 0 ? (
-                    <div className="text-center py-20 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 border-dashed">
-                        <div className="mx-auto h-12 w-12 text-slate-400">
-                            <Plane className="h-full w-full" />
+                    <div className="text-center py-20 bg-slate-50 rounded-2xl border border-slate-100 border-dashed">
+                        <div className="mx-auto h-12 w-12 text-slate-300">
+                            <Plane className="h-full w-full stroke-[1.5]" />
                         </div>
-                        <h3 className="mt-2 text-sm font-medium text-slate-900 dark:text-white">No trips found</h3>
-                        <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Get started by planning a new adventure.</p>
+                        <h3 className="mt-2 text-sm font-medium text-slate-900">No trips found</h3>
+                        <p className="mt-1 text-sm text-slate-500">Get started by planning a new adventure.</p>
                         <div className="mt-6">
-                            <button className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <button
+                                onClick={() => setIsWizardOpen(true)}
+                                className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700"
+                            >
                                 <Plus className="-ml-1 mr-2 h-5 w-5" aria-hidden="true" />
                                 New Trip
                             </button>
@@ -135,61 +139,61 @@ const TripCard: React.FC<{ trip: Trip; onClick: () => void }> = ({ trip, onClick
     return (
         <div
             onClick={onClick}
-            className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-md transition-shadow cursor-pointer group"
+            className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 transition-all cursor-pointer group"
         >
             <div className="p-6">
                 <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-4">
-                        <div className={`p-3 rounded-lg ${trip.purpose === 'business' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' :
-                            trip.purpose === 'conference' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400' :
-                                'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400'
+                        <div className={`p-3 rounded-xl ${trip.purpose === 'business' ? 'bg-blue-50 text-blue-600' :
+                            trip.purpose === 'conference' ? 'bg-purple-50 text-purple-600' :
+                                'bg-orange-50 text-orange-600'
                             }`}>
                             {trip.purpose === 'business' ? <Briefcase className="h-6 w-6" /> :
                                 trip.purpose === 'conference' ? <Users className="h-6 w-6" /> :
                                     <User className="h-6 w-6" />}
                         </div>
                         <div>
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                            <h3 className="text-xl font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                                 {trip.name}
                             </h3>
-                            <div className="flex items-center text-slate-500 dark:text-slate-400 mt-1">
-                                <MapPin className="h-4 w-4 mr-1" />
-                                <span className="text-sm">{trip.destination}</span>
+                            <div className="flex items-center text-slate-500 mt-1">
+                                <MapPin className="h-4 w-4 mr-1 stroke-2" />
+                                <span className="text-sm font-medium">{trip.destination}</span>
                             </div>
                         </div>
                     </div>
 
                     <div className="text-right">
                         {daysUntil > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 border border-blue-100">
                                 in {daysUntil} days
                             </span>
                         ) : (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-green-50 text-green-600 border border-green-100">
                                 Active
                             </span>
                         )}
                     </div>
                 </div>
 
-                <div className="mt-6 flex items-center justify-between border-t border-slate-100 dark:border-slate-700/50 pt-4">
+                <div className="mt-6 flex items-center justify-between border-t border-slate-50 pt-4">
                     <div className="flex space-x-6">
-                        <div className="flex items-center text-sm text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center text-sm text-slate-600 font-medium">
                             <Calendar className="h-4 w-4 mr-2 text-slate-400" />
                             {format(new Date(trip.startDate), 'MMM d')} - {format(new Date(trip.endDate), 'MMM d, yyyy')}
                         </div>
-                        <div className="flex items-center text-sm text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center text-sm text-slate-600 font-medium">
                             <Clock className="h-4 w-4 mr-2 text-slate-400" />
                             {duration} Days
                         </div>
                     </div>
 
                     <div className="flex items-center space-x-4">
-                        <div className="flex items-center text-xs text-slate-500 dark:text-slate-400">
+                        <div className="flex items-center text-xs text-slate-500 font-bold uppercase tracking-wider">
                             <Plane className="h-3 w-3 mr-1" />
                             {trip.flights.length} Flights
                         </div>
-                        <button className="text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:text-indigo-700 dark:hover:text-indigo-300 flex items-center">
+                        <button className="text-blue-600 text-sm font-bold hover:text-blue-700 flex items-center bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
                             View Itinerary <ChevronRight className="h-4 w-4 ml-1" />
                         </button>
                     </div>
@@ -197,13 +201,13 @@ const TripCard: React.FC<{ trip: Trip; onClick: () => void }> = ({ trip, onClick
             </div>
 
             {/* Quick Status Bar */}
-            <div className="bg-slate-50 dark:bg-slate-700/30 px-6 py-3 flex items-center justify-between">
+            <div className="bg-slate-50/50 px-6 py-3 flex items-center justify-between border-t border-slate-50">
                 <div className="flex space-x-2">
                     {trip.checklist.slice(0, 3).map(item => (
-                        <div key={item.id} className={`h-1.5 w-8 rounded-full ${item.isCompleted ? 'bg-green-500' : 'bg-slate-200 dark:bg-slate-600'}`} />
+                        <div key={item.id} className={`h-1.5 w-8 rounded-full ${item.isCompleted ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]' : 'bg-slate-200'}`} />
                     ))}
                 </div>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
+                <span className="text-xs font-bold text-slate-400">
                     {trip.checklist.filter(i => i.isCompleted).length}/{trip.checklist.length} Tasks
                 </span>
             </div>

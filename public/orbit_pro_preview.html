@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concept: Orbit PRO (Ultimate Polish)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: {
+                        ios: {
+                            blue: '#007AFF',
+                            gray: '#8E8E93',
+                            bg: '#F5F5F7',
+                            separator: '#C6C6C8',
+                        }
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'sharp': '0 1px 2px 0 rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.04)',
+                        'float': '0 20px 40px -12px rgba(0, 0, 0, 0.1)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F8FAFC;
+            color: #0F172A;
+            /* The "Aurora" Subtle Mesh Gradient */
+            background-image:
+                radial-gradient(at 0% 0%, rgba(200, 220, 255, 0.4) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(230, 240, 255, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 240, 220, 0.3) 0px, transparent 50%);
+            background-attachment: fixed;
+        }
+
+        /* Super-smooth transitions */
+        * {
+            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* "Pro" Grade Glass */
+        .glass-surface {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        /* The "Linear" distinct border look */
+        .crisp-border {
+            box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06);
+        }
+
+        .nav-item.active {
+            background: white;
+            color: #007AFF;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        }
+
+        .sidebar-icon {
+            background: linear-gradient(135deg, #E0E7FF 0%, #F5F3FF 100%);
+        }
+    </style>
+</head>
+
+<body class="h-screen flex text-sm overflow-hidden antialiased selection:bg-blue-100 selection:text-blue-700">
+
+    <!-- Sidebar: Ultra-Minimal & Clean -->
+    <aside class="w-20 lg:w-64 flex flex-col pt-8 pb-6 px-4 z-20">
+        <div class="px-2 mb-10 flex items-center gap-3">
+            <button
+                class="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl text-white font-bold text-lg shadow-lg shadow-blue-500/25 flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+            </button>
+            <div class="hidden lg:block">
+                <h1 class="font-bold text-slate-800 tracking-tight text-base">Orbit<span
+                        class="text-blue-600">Pro</span></h1>
+                <p class="text-[10px] text-slate-400 font-medium tracking-wide">WORKSPACE</p>
+            </div>
+        </div>
+
+        <div class="px-2 mb-6 hidden lg:block">
+            <button
+                class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow-xl shadow-slate-900/10 transition-transform active:scale-95 flex items-center justify-center gap-2">
+                <span>+</span> New Event
+            </button>
+        </div>
+
+        <nav class="flex-1 space-y-1">
+            <a href="#"
+                class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-600 font-medium">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
+                <span class="hidden lg:block">Schedule</span>
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-black/5 hover:text-slate-900">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                    </path>
+                </svg>
+                <span class="hidden lg:block">Messages</span>
+                <span
+                    class="ml-auto bg-slate-200 text-slate-600 text-[10px] font-bold px-1.5 py-0.5 rounded-md hidden lg:inline-block">4</span>
+            </a>
+            <a href="#"
+                class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:bg-black/5 hover:text-slate-900">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                </svg>
+                <span class="hidden lg:block">Trips</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto px-2">
+            <div
+                class="p-3 bg-white crisp-border rounded-xl flex items-center gap-3 cursor-pointer hover:border-slate-300 transition-colors">
+                <div
+                    class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                    TM</div>
+                <div class="hidden lg:block overflow-hidden">
+                    <div class="text-xs font-bold text-slate-800 truncate">Teja Medi</div>
+                    <div class="text-[10px] text-slate-400">Pro Plan</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content: The Floating Glass Sheet -->
+    <main class="flex-1 py-4 pr-4 h-full relative overflow-hidden">
+
+        <!-- The "Stage": A single floating card for the app content -->
+        <div
+            class="h-full w-full bg-white/80 backdrop-blur-xl rounded-[24px] shadow-glass crisp-border flex flex-col relative overflow-hidden">
+
+            <!-- Top Bar -->
+            <header
+                class="h-16 border-b border-black/5 flex items-center justify-between px-8 bg-white/50 backdrop-blur-md sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-xl font-bold tracking-tight text-slate-900">Today</h2>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <button
+                            class="p-1 hover:bg-white rounded-md shadow-sm transition-all text-slate-500 hover:text-slate-900"><svg
+                                class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M15 19l-7-7 7-7"></path>
+                            </svg></button>
+                        <span class="px-3 py-0.5 text-xs font-semibold text-slate-700 flex items-center">Oct 25</span>
+                        <button
+                            class="p-1 hover:bg-white rounded-md shadow-sm transition-all text-slate-500 hover:text-slate-900"><svg
+                                class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7">
+                                </path>
+                            </svg></button>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="relative group">
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors"
+                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <input type="text" placeholder="Search..."
+                            class="bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-1.5 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all w-64">
+                    </div>
+                </div>
+            </header>
+
+            <!-- Scrollable Content -->
+            <div class="flex-1 overflow-y-auto p-8 relative">
+                <div class="max-w-5xl mx-auto grid grid-cols-12 gap-8">
+
+                    <!-- Hero Widget -->
+                    <div
+                        class="col-span-12 bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-700 rounded-2xl p-8 text-white relative overflow-hidden shadow-float group cursor-pointer">
+                        <div
+                            class="absolute top-0 right-0 p-8 opacity-20 group-hover:scale-110 transition-transform duration-700">
+                            <svg class="w-32 h-32" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        <div class="relative z-10">
+                            <span
+                                class="inline-block px-2 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-bold uppercase tracking-widest mb-4 border border-white/10">AI
+                                Insight</span>
+                            <h3 class="text-3xl font-bold mb-2 tracking-tight">Focus Block Available</h3>
+                            <p class="text-blue-100 max-w-lg text-lg leading-relaxed">
+                                You have a 2-hour gap between 2 PM and 4 PM. I can block notifications for deep work.
+                            </p>
+                            <div class="mt-6 flex gap-3">
+                                <button
+                                    class="px-5 py-2.5 bg-white text-blue-600 rounded-lg font-bold text-sm shadow-lg hover:bg-blue-50 hover:-translate-y-0.5 transition-all">Enable
+                                    Focus Mode</button>
+                                <button
+                                    class="px-5 py-2.5 bg-blue-800/30 text-white border border-white/20 rounded-lg font-bold text-sm hover:bg-blue-800/50 transition-all">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Timeline Column -->
+                    <div class="col-span-8">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="font-bold text-slate-800 text-lg">Upcoming</h3>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- Card Item -->
+                            <div
+                                class="group bg-white rounded-xl p-4 border border-slate-100 shadow-sharp hover:shadow-lg hover:-translate-y-0.5 hover:border-blue-200 transition-all cursor-pointer flex gap-4">
+                                <div
+                                    class="flex flex-col items-center justify-center w-16 h-16 bg-slate-50 rounded-lg border border-slate-100 text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 group-hover:border-blue-100 transition-colors">
+                                    <span class="text-xs font-bold">14:00</span>
+                                </div>
+                                <div class="flex-1 py-1">
+                                    <h4
+                                        class="font-bold text-slate-800 text-base mb-1 group-hover:text-blue-600 transition-colors">
+                                        Product Strategy Review</h4>
+                                    <p class="text-sm text-slate-500 flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-green-500"></span> Google Meet • 1h
+                                    </p>
+                                </div>
+                                <div class="flex -space-x-2 items-center">
+                                    <div class="w-8 h-8 rounded-full bg-slate-200 border-2 border-white"></div>
+                                    <div class="w-8 h-8 rounded-full bg-slate-300 border-2 border-white"></div>
+                                </div>
+                            </div>
+
+                            <!-- Card Item -->
+                            <div
+                                class="group bg-white rounded-xl p-4 border border-slate-100 shadow-sharp hover:shadow-lg hover:-translate-y-0.5 hover:border-purple-200 transition-all cursor-pointer flex gap-4">
+                                <div
+                                    class="flex flex-col items-center justify-center w-16 h-16 bg-slate-50 rounded-lg border border-slate-100 text-slate-400 group-hover:text-purple-600 group-hover:bg-purple-50 group-hover:border-purple-100 transition-colors">
+                                    <span class="text-xs font-bold">16:30</span>
+                                </div>
+                                <div class="flex-1 py-1">
+                                    <h4
+                                        class="font-bold text-slate-800 text-base mb-1 group-hover:text-purple-600 transition-colors">
+                                        Design Audit</h4>
+                                    <p class="text-sm text-slate-500 flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full bg-purple-500"></span> Figma • 30m
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Side Widgets -->
+                    <div class="col-span-4 space-y-6">
+                        <div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sharp">
+                            <h4 class="font-bold text-slate-400 text-xs uppercase tracking-widest mb-4">Quick Actions
+                            </h4>
+                            <div class="space-y-2">
+                                <button
+                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700 flex justify-between group transition-colors">
+                                    Create Event <span class="text-slate-400 group-hover:text-slate-600">→</span>
+                                </button>
+                                <button
+                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700 flex justify-between group transition-colors">
+                                    Book Flight <span class="text-slate-400 group-hover:text-slate-600">→</span>
+                                </button>
+                                <button
+                                    class="w-full text-left px-4 py-3 rounded-lg hover:bg-slate-50 text-sm font-medium text-slate-700 flex justify-between group transition-colors">
+                                    Find Meeting Slot <span class="text-slate-400 group-hover:text-slate-600">→</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div
+                            class="bg-gradient-to-tr from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-100 shadow-sm">
+                            <div class="flex items-center gap-2 mb-2">
+                                <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <h4 class="font-bold text-emerald-800">All Systems Go</h4>
+                            </div>
+                            <p class="text-xs text-emerald-600 leading-relaxed font-medium">
+                                Your schedule is synced. No conflicts detected for the next 48 hours.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+
+</html>
