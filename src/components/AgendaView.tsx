@@ -42,7 +42,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                         {/* Events Column */}
                         <div className="flex-1 space-y-4 border-l-2 border-slate-100 pl-6 pb-6 relative">
                             {/* Dot on timeline */}
-                            <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-indigo-500 shadow-sm" />
+                            <div className="absolute -left-[9px] top-1.5 w-4 h-4 rounded-full border-4 border-white bg-blue-600 shadow-sm" />
 
                             {dayEvents.map(event => (
                                 <div
@@ -52,7 +52,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
                                 >
                                     <div className="flex justify-between items-start">
                                         <div>
-                                            <h3 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
+                                            <h3 className="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
                                                 {event.title}
                                             </h3>
                                             <div className="flex items-center text-sm text-slate-500 mt-2 space-x-4">

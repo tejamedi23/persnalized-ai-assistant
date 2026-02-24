@@ -44,11 +44,12 @@ export const AIChat: React.FC = () => {
         return (
             <button
                 onClick={() => setIsOpen(true)}
-                className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-tr from-indigo-600 to-purple-600 rounded-full shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all duration-300 z-[100] group"
+                className="fixed bottom-8 right-8 w-16 h-16 bg-gradient-to-tr from-blue-600 to-indigo-700 rounded-2xl shadow-2xl flex items-center justify-center text-white hover:scale-110 transition-all duration-300 z-[100] group border border-white/20"
             >
+                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <MessageSquare className="h-7 w-7 group-hover:hidden" />
                 <Sparkles className="h-7 w-7 hidden group-hover:block animate-pulse" />
-                <div className="absolute -top-1 -right-1 h-5 w-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center">
+                <div className="absolute -top-1 -right-1 h-5 w-5 bg-amber-400 rounded-full border-2 border-white flex items-center justify-center shadow-lg">
                     <Zap className="h-3 w-3 text-white fill-current" />
                 </div>
             </button>
@@ -58,7 +59,7 @@ export const AIChat: React.FC = () => {
     return (
         <div className="fixed bottom-6 right-6 w-[450px] h-[650px] bg-white dark:bg-slate-900 rounded-[32px] shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border border-slate-100 dark:border-slate-800 flex flex-col overflow-hidden z-[100] animate-in fade-in slide-in-from-bottom-10 duration-500">
             {/* Header */}
-            <header className="px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex justify-between items-center shrink-0">
+            <header className="px-6 py-5 bg-gradient-to-r from-blue-600 to-blue-800 text-white flex justify-between items-center shrink-0">
                 <div className="flex items-center space-x-3">
                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md">
                         <Sparkles className="h-5 w-5" />
@@ -108,7 +109,7 @@ export const AIChat: React.FC = () => {
                             </div>
 
                             <div className={`p-4 rounded-3xl text-sm leading-relaxed shadow-sm ${msg.role === 'user'
-                                ? 'bg-indigo-600 text-white rounded-tr-none font-medium'
+                                ? 'bg-blue-600 text-white rounded-tr-none font-medium'
                                 : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-none border border-slate-100 dark:border-slate-700 font-medium'
                                 }`}>
                                 {msg.content}
@@ -121,8 +122,8 @@ export const AIChat: React.FC = () => {
                                             key={action.id}
                                             onClick={() => handleAction(action)}
                                             className={`px-4 py-2 rounded-xl text-xs font-black flex items-center transition-all transform active:scale-95 ${action.isPrimary
-                                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200'
-                                                : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30'
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
+                                                : 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30'
                                                 }`}
                                         >
                                             {action.type === 'schedule' && <Calendar className="h-3 w-3 mr-2" />}
@@ -141,9 +142,9 @@ export const AIChat: React.FC = () => {
                 {isTyping && (
                     <div className="flex justify-start">
                         <div className="bg-white dark:bg-slate-800 p-4 rounded-3xl rounded-tl-none border border-slate-100 dark:border-slate-700 flex space-x-1">
-                            <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
-                            <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
+                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '200ms' }} />
+                            <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '400ms' }} />
                         </div>
                     </div>
                 )}
@@ -152,8 +153,8 @@ export const AIChat: React.FC = () => {
             {/* Input Area */}
             <footer className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
                 <div className="relative group">
-                    <div className="absolute inset-0 bg-indigo-100 dark:bg-indigo-900/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity" />
-                    <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 border border-transparent focus-within:border-indigo-500 transition-all">
+                    <div className="absolute inset-0 bg-blue-100 dark:bg-blue-900/20 rounded-2xl blur-lg opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 border border-transparent focus-within:border-blue-500 transition-all">
                         <input
                             type="text"
                             placeholder="Ask me anything..."
@@ -165,7 +166,7 @@ export const AIChat: React.FC = () => {
                         <button
                             onClick={handleSend}
                             disabled={!inputValue.trim() || isTyping}
-                            className="p-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all"
+                            className="p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 text-white rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all"
                         >
                             <Send className="h-5 w-5" />
                         </button>

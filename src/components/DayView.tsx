@@ -49,19 +49,19 @@ export const DayView: React.FC<DayViewProps> = ({
 
         if (conflict) {
             if (conflict.severity === 'critical') {
-                return 'bg-red-100 border-red-500 text-red-900 border-l-[6px] animate-pulse ring-2 ring-red-400';
+                return 'bg-red-50 border-red-500 text-red-900 border-l-[6px] shadow-sm';
             }
             if (conflict.severity === 'warning') {
-                return 'bg-amber-100 border-amber-500 text-amber-900 border-l-[6px] ring-2 ring-amber-300';
+                return 'bg-amber-50 border-amber-500 text-amber-900 border-l-[6px] shadow-sm';
             }
         }
 
         switch (type) {
-            case 'meeting': return 'bg-blue-50 border-blue-500 text-blue-900 border-l-[6px] hover:bg-blue-100';
-            case 'call': return 'bg-green-50 border-green-500 text-green-900 border-l-[6px] hover:bg-green-100';
-            case 'work': return 'bg-purple-50 border-purple-500 text-purple-900 border-l-[6px] hover:bg-purple-100';
-            case 'personal': return 'bg-orange-50 border-orange-500 text-orange-900 border-l-[6px] hover:bg-orange-100';
-            default: return 'bg-gray-50 border-gray-500 text-gray-900 border-l-[6px] hover:bg-gray-100';
+            case 'meeting': return 'bg-blue-50 border-blue-600 text-blue-900 border-l-[6px] hover:bg-blue-100/50';
+            case 'call': return 'bg-slate-50 border-slate-600 text-slate-900 border-l-[6px] hover:bg-slate-100/50';
+            case 'work': return 'bg-indigo-50 border-indigo-600 text-indigo-900 border-l-[6px] hover:bg-indigo-100/50';
+            case 'personal': return 'bg-emerald-50 border-emerald-600 text-emerald-900 border-l-[6px] hover:bg-emerald-100/50';
+            default: return 'bg-slate-50 border-slate-400 text-slate-900 border-l-[6px] hover:bg-slate-100/50';
         }
     };
 
@@ -75,10 +75,18 @@ export const DayView: React.FC<DayViewProps> = ({
                     {/* Time Column & Lines */}
                     {HOURS.map((hour, i) => (
                         <div key={hour} className="absolute w-full flex" style={{ top: i * CELL_HEIGHT, height: CELL_HEIGHT }}>
-                            <div className="w-16 flex-shrink-0 text-xs text-slate-500 font-medium text-right pr-4 pt-2 -mt-2.5">
+                            <div className="w-16 flex-shrink-0 text-[10px] text-slate-400 font-bold text-right pr-4 pt-2 -mt-2.5 uppercase tracking-tighter">
                                 {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
                             </div>
-                            <div className="flex-1 border-t border-slate-100" />
+                            <div className="flex-1 border-t border-slate-200 relative">
+                                {/* 15-min sub-lines */}
+                                <div className="absolute inset-0 flex flex-col pointer-events-none">
+                                    <div className="flex-1 border-b border-slate-50 outline-none" />
+                                    <div className="flex-1 border-b border-slate-100 outline-none" />
+                                    <div className="flex-1 border-b border-slate-50 outline-none" />
+                                    <div className="flex-1" />
+                                </div>
+                            </div>
                         </div>
                     ))}
 

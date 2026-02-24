@@ -48,7 +48,7 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                 className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
             >
                 {/* Header */}
-                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-indigo-600">
+                <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-blue-600">
                     <div className="flex items-center text-white">
                         <Sparkles className="h-5 w-5 mr-2" />
                         <h2 className="text-lg font-semibold">AI Scheduling Assistant</h2>
@@ -76,7 +76,7 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                                 key={m}
                                                 onClick={() => setDuration(m)}
                                                 className={`py-2 px-3 rounded-lg text-sm font-medium transition-all ${duration === m
-                                                    ? 'bg-indigo-600 text-white shadow-md'
+                                                    ? 'bg-blue-600 text-white shadow-md'
                                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                     }`}
                                             >
@@ -86,7 +86,7 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                         <button
                                             onClick={() => setDuration(90)}
                                             className={`col-span-2 py-2 px-3 rounded-lg text-sm font-medium transition-all ${duration === 90
-                                                ? 'bg-indigo-600 text-white shadow-md'
+                                                ? 'bg-blue-600 text-white shadow-md'
                                                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                         >
@@ -107,16 +107,16 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                     />
                                     <div className="flex justify-between text-xs text-slate-500 mt-2">
                                         <span>Today</span>
-                                        <span className="font-semibold text-indigo-600">{days} Days</span>
+                                        <span className="font-semibold text-blue-600">{days} Days</span>
                                         <span>2 Weeks</span>
                                     </div>
                                 </div>
 
-                                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 flex items-start">
-                                    <Clock className="h-5 w-5 text-indigo-600 mr-3 flex-shrink-0 mt-0.5" />
+                                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start">
+                                    <Clock className="h-5 w-5 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
                                     <div>
-                                        <h4 className="text-sm font-semibold text-indigo-900">Analysis Mode</h4>
-                                        <p className="text-xs text-indigo-700 mt-1">
+                                        <h4 className="text-sm font-semibold text-blue-900">Analysis Mode</h4>
+                                        <p className="text-xs text-blue-700 mt-1">
                                             We'll scan your working hours (9 AM - 5 PM) and prioritize slots that minimize fragmentation and maximize focus time.
                                         </p>
                                     </div>
@@ -125,7 +125,7 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                 <button
                                     onClick={handleSearch}
                                     disabled={isSearching}
-                                    className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg font-semibold flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg font-semibold flex items-center justify-center transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
                                     {isSearching ? (
                                         <>
@@ -150,7 +150,7 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <h3 className="text-lg font-bold text-slate-800">Top Suggestions</h3>
-                                    <button onClick={handleBack} className="text-sm text-indigo-600 hover:underline">
+                                    <button onClick={handleBack} className="text-sm text-blue-600 hover:underline">
                                         Change Criteria
                                     </button>
                                 </div>
@@ -161,14 +161,14 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                             <CalendarIcon className="h-6 w-6 text-slate-400" />
                                         </div>
                                         <p className="text-slate-500">No free slots found in this range.</p>
-                                        <button onClick={handleBack} className="mt-2 text-indigo-600 font-medium hover:underline">Try modifying criteria</button>
+                                        <button onClick={handleBack} className="mt-2 text-blue-600 font-medium hover:underline">Try modifying criteria</button>
                                     </div>
                                 ) : (
                                     <div className="space-y-3">
                                         {results.map((slot, idx) => (
                                             <div
                                                 key={idx}
-                                                className="group border border-slate-200 rounded-xl p-4 hover:border-indigo-300 hover:shadow-md transition-all cursor-pointer bg-white relative overflow-hidden"
+                                                className="group border border-slate-200 rounded-xl p-4 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer bg-white relative overflow-hidden"
                                                 onClick={() => onSelectSlot(slot.start, slot.end)}
                                             >
                                                 {/* Score indicator */}
@@ -192,8 +192,8 @@ export const MeetingFinderModal: React.FC<MeetingFinderModalProps> = ({ isOpen, 
                                                             {format(slot.start, 'EEEE, MMM d')}
                                                         </div>
                                                     </div>
-                                                    <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors">
-                                                        <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-indigo-600" />
+                                                    <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-blue-50 transition-colors">
+                                                        <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-blue-600" />
                                                     </div>
                                                 </div>
 

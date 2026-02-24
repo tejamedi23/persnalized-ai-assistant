@@ -31,6 +31,7 @@ export const EventModal: React.FC<EventModalProps> = ({
     const [endTime, setEndTime] = useState('10:00');
     const [type, setType] = useState<EventType>('meeting');
     const [description, setDescription] = useState('');
+    const [recurrence, setRecurrence] = useState<'none' | 'daily' | 'weekly' | 'monthly'>('none');
 
     useEffect(() => {
         if (isOpen) {
@@ -38,6 +39,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                 setTitle(initialEvent.title);
                 setDescription(initialEvent.description);
                 setType(initialEvent.type);
+                setRecurrence(initialEvent.recurrence || 'none');
                 setDate(initialEvent.start.toISOString().split('T')[0]);
                 setStartTime(initialEvent.start.toTimeString().slice(0, 5));
                 setEndTime(initialEvent.end.toTimeString().slice(0, 5));
@@ -69,6 +71,7 @@ export const EventModal: React.FC<EventModalProps> = ({
             title,
             description,
             type,
+            recurrence,
             start: startDateTime,
             end: endDateTime,
         });
@@ -104,7 +107,7 @@ export const EventModal: React.FC<EventModalProps> = ({
 
                                 <div className="mt-6 space-y-4">
                                     {/* Title */}
-                                    <div className="relative rounded-md border border-gray-300 dark:border-slate-600 px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-indigo-600 focus-within:border-indigo-600 bg-white dark:bg-slate-900">
+                                    <div className="relative rounded-md border border-slate-300 dark:border-slate-600 px-3 py-2 shadow-sm focus-within:ring-1 focus-within:ring-blue-600 focus-within:border-blue-600 bg-white dark:bg-slate-900">
                                         <label htmlFor="title" className="absolute -top-2 left-2 -mt-px inline-block px-1 bg-white dark:bg-slate-900 text-xs font-medium text-gray-900 dark:text-gray-200">
                                             Event Title
                                         </label>
@@ -130,7 +133,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                                                 key={t.value}
                                                 type="button"
                                                 onClick={() => setType(t.value)}
-                                                className={`flex flex-col items-center p-2 rounded-md border ${type === t.value ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:border-indigo-500' : 'border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
+                                                className={`flex flex-col items-center p-2 rounded-md border ${type === t.value ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500' : 'border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-slate-700'
                                                     }`}
                                             >
                                                 <span className={`w-3 h-3 rounded-full ${t.color} mb-1`} />
@@ -195,13 +198,31 @@ export const EventModal: React.FC<EventModalProps> = ({
                                             <textarea
                                                 id="description"
                                                 name="description"
-                                                rows={3}
-                                                className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border border-gray-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500"
+                                                rows={2}
+                                                className="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-slate-300 dark:border-slate-600 rounded-md bg-white dark:bg-slate-900 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                                                 placeholder="Add details..."
                                                 value={description}
                                                 onChange={(e) => setDescription(e.target.value)}
                                             />
                                         </div>
+                                    </div>
+
+                                    {/* Recurrence */}
+                                    <div>
+                                        <label htmlFor="recurrence" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Repeat
+                                        </label>
+                                        <select
+                                            id="recurrence"
+                                            value={recurrence}
+                                            onChange={(e) => setRecurrence(e.target.value as any)}
+                                            className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white dark:bg-slate-900 dark:text-white"
+                                        >
+                                            <option value="none">Does not repeat</option>
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                        </select>
                                     </div>
 
                                 </div>
@@ -210,7 +231,7 @@ export const EventModal: React.FC<EventModalProps> = ({
                         <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                             <button
                                 type="submit"
-                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm"
+                                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
                             >
                                 Save Event
                             </button>

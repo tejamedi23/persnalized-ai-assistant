@@ -12,7 +12,9 @@ import { ConflictSidebar } from './ConflictSidebar';
 import { MeetingFinderModal } from './MeetingFinderModal';
 import { TravelView } from './TravelView';
 import { SettingsModal } from './SettingsModal';
+import { ResolutionModal } from './ResolutionModal';
 import { AIChat } from './AIChat';
+import { Timetable } from './Timetable';
 import {
     ChevronLeft,
     ChevronRight,
@@ -35,7 +37,8 @@ export const Dashboard: React.FC = () => {
     const {
         viewMode,
         currentDate,
-        events,
+        rawEvents: events, // Use rawEvents if needed or events
+        conflicts,
         isEventModalOpen,
         setIsEventModalOpen,
         isMeetingFinderOpen,
@@ -43,7 +46,8 @@ export const Dashboard: React.FC = () => {
         isConflictSidebarOpen,
         setIsConflictSidebarOpen,
         addEvent,
-        updateEvent
+        updateEvent,
+        resolveConflict
     } = useCalendar();
 
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -85,26 +89,37 @@ export const Dashboard: React.FC = () => {
                     {viewMode === 'week' && <WeekView currentDate={currentDate} events={events} onEventClick={handleEventClick} onSlotClick={handleSlotClick} />}
                     {viewMode === 'month' && <MonthView currentDate={currentDate} events={events} onDateClick={handleSlotClick} />}
                     {viewMode === 'agenda' && <AgendaView currentDate={currentDate} events={events} onEventClick={handleEventClick} />}
+                    {viewMode === 'timetable' && <Timetable />}
                     {viewMode === 'travel' && <TravelView />}
-                    {viewMode === 'analytics' && <AnalyticsView />}
                 </main>
 
                 {/* Mini Calendar Sidebar (always visible on desktop) */}
-                {['day', 'week', 'month', 'agenda'].includes(viewMode) && (
-                    <aside className="w-80 border-l border-slate-100 bg-white hidden xl:flex flex-col shrink-0 z-10 p-6">
+                {['day', 'week', 'month', 'agenda', 'timetable'].includes(viewMode) && (
+                    <aside className="w-80 border-l border-slate-100 bg-white hidden xl:flex flex-col shrink-0 z-10 p-6 overflow-y-auto custom-scrollbar">
                         <MiniCalendar />
+                        <ConflictSidebar onClose={() => { }} />
                     </aside>
                 )}
             </div>
 
             <AnimatePresence>
                 {isConflictSidebarOpen && (
-                    <ConflictSidebar onClose={() => setIsConflictSidebarOpen(false)} />
+                    <div onClick={() => setIsConflictSidebarOpen(false)} className="fixed inset-0 bg-black/5 z-40 xl:hidden" />
                 )}
             </AnimatePresence>
 
-            {/* AIChat - Hidden as it's now in the main Assistant Panel */}
-            {/* <AIChat /> */}
+            <ResolutionModal
+                isOpen={!!conflicts.length && isConflictSidebarOpen}
+                conflict={conflicts[0] || null}
+                events={events}
+                onResolve={(eventId, newStart) => {
+                    const event = events.find(e => e.id === eventId);
+                    if (event) {
+                        updateEvent({ ...event, start: newStart, end: new Date(newStart.getTime() + (event.end.getTime() - event.start.getTime())) });
+                    }
+                }}
+                onClose={() => setIsConflictSidebarOpen(false)}
+            />
 
             <EventModal
                 isOpen={isEventModalOpen}

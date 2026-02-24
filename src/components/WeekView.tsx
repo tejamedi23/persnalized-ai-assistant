@@ -28,7 +28,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
     onEventClick,
     onSlotClick
 }) => {
-    const { conflicts } = useCalendar();
+    const { conflicts, updateEvent } = useCalendar();
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
 
@@ -85,14 +85,14 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     {weekDays.map((day) => (
                         <div
                             key={day.toISOString()}
-                            className={`text-center py-3 border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 ${isToday(day) ? 'bg-indigo-50 dark:bg-indigo-900/20' : 'bg-white dark:bg-slate-800'
+                            className={`text-center py-3 border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 ${isToday(day) ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-slate-800'
                                 }`}
                         >
-                            <div className={`text-xs font-semibold uppercase tracking-wide ${isToday(day) ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400'
+                            <div className={`text-xs font-semibold uppercase tracking-wide ${isToday(day) ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'
                                 }`}>
                                 {format(day, 'EEE')}
                             </div>
-                            <div className={`mt-1 text-2xl font-light ${isToday(day) ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200'
+                            <div className={`mt-1 text-2xl font-light ${isToday(day) ? 'text-blue-700 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'
                                 }`}>
                                 {format(day, 'd')}
                             </div>
@@ -115,22 +115,56 @@ export const WeekView: React.FC<WeekViewProps> = ({
 
                     {/* Days Columns */}
                     <div className="flex-1 grid grid-cols-7 relative">
-                        {/* Horizontal Lines for Hours */}
+                        {/* Horizontal Lines for Hours and 15-min intervals */}
                         <div className="absolute inset-0 z-0 pointer-events-none">
                             {HOURS.map((_, i) => (
                                 <div
                                     key={i}
-                                    className="border-b border-slate-100 dark:border-slate-700/30 w-full"
+                                    className="relative w-full border-b border-slate-200 dark:border-slate-700"
                                     style={{ height: CELL_HEIGHT, boxSizing: 'border-box' }}
-                                />
+                                >
+                                    {/* 15-min sub-lines */}
+                                    <div className="absolute inset-0 flex flex-col">
+                                        <div className="flex-1 border-b border-slate-50 dark:border-slate-800/50 outline-none" />
+                                        <div className="flex-1 border-b border-slate-100 dark:border-slate-800 outline-none" />
+                                        <div className="flex-1 border-b border-slate-50 dark:border-slate-800/50 outline-none" />
+                                        <div className="flex-1" />
+                                    </div>
+                                </div>
                             ))}
                         </div>
 
                         {weekDays.map((day) => (
                             <div
                                 key={day.toISOString()}
-                                className={`relative border-r border-slate-100 dark:border-slate-700/30 last:border-r-0 z-10 h-full group ${isToday(day) ? 'bg-indigo-50/10 dark:bg-indigo-900/5' : ''
+                                className={`relative border-r border-slate-100 dark:border-slate-700/30 last:border-r-0 z-10 h-full group ${isToday(day) ? 'bg-blue-50/10 dark:bg-blue-900/5' : ''
                                     }`}
+                                onDragOver={(e) => {
+                                    e.preventDefault();
+                                    e.dataTransfer.dropEffect = 'move';
+                                }}
+                                onDrop={(e) => {
+                                    e.preventDefault();
+                                    const eventId = e.dataTransfer.getData('eventId');
+                                    if (eventId && updateEvent) {
+                                        const event = events.find(ev => ev.id === eventId);
+                                        if (event) {
+                                            const rect = e.currentTarget.getBoundingClientRect();
+                                            const y = e.clientY - rect.top;
+                                            const minutesFrom8AM = (y / CELL_HEIGHT) * 60;
+                                            const totalMinutes = 8 * 60 + minutesFrom8AM;
+                                            const hours = Math.floor(totalMinutes / 60);
+                                            const mins = Math.floor((totalMinutes % 60) / 15) * 15; // Snap to 15 mins
+
+                                            const newStart = new Date(day);
+                                            newStart.setHours(hours, mins, 0, 0);
+                                            const duration = event.end.getTime() - event.start.getTime();
+                                            const newEnd = new Date(newStart.getTime() + duration);
+
+                                            updateEvent({ ...event, start: newStart, end: newEnd });
+                                        }
+                                    }
+                                }}
                                 onClick={() => {
                                     // Simple click to add
                                     onSlotClick(setHours(day, 9));
@@ -147,6 +181,11 @@ export const WeekView: React.FC<WeekViewProps> = ({
                                             style={{
                                                 ...getEventStyle(event),
                                                 zIndex: hasConflict ? 30 : 20
+                                            }}
+                                            draggable
+                                            onDragStart={(e) => {
+                                                e.dataTransfer.setData('eventId', event.id);
+                                                e.dataTransfer.effectAllowed = 'move';
                                             }}
                                             onClick={(e) => {
                                                 e.stopPropagation();

@@ -1,16 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { getEmails, Email, summarizeEmail } from '../services/EmailService';
-import { Mail, MessageSquare, Sparkles, Clock, Star } from 'lucide-react';
+import { getEmails, Email, summarizeEmail, EmailCategory } from '../services/EmailService';
+import { Mail, MessageSquare, Sparkles, Clock, Star, AlertTriangle, X, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SmartComposer } from './SmartComposer';
+import { useCalendar } from '../context/CalendarContext';
 
 export const EmailWorkspace: React.FC = () => {
     const [emails, setEmails] = useState<Email[]>([]);
     const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
     const [isSummarizing, setIsSummarizing] = useState(false);
+    const [activeCategory, setActiveCategory] = useState<EmailCategory | 'all'>('all');
+    const [isComposerOpen, setIsComposerOpen] = useState(false);
 
     useEffect(() => {
         getEmails().then(setEmails);
     }, []);
+
+    const filteredEmails = activeCategory === 'all'
+        ? emails
+        : emails.filter(e => e.category === activeCategory);
+
+    const { addEvent, setIsEventModalOpen } = useCalendar();
 
     const handleSummarize = async (email: Email) => {
         setIsSummarizing(true);
@@ -19,30 +29,99 @@ export const EmailWorkspace: React.FC = () => {
         setIsSummarizing(false);
     };
 
+    const handleAddToCalendar = (email: Email) => {
+        // Suggest a meeting based on email content
+        const now = new Date();
+        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0); // Default to tomorrow 10am
+        const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+        const suggestedEvent = {
+            title: email.subject.replace('Meeting Invitation: ', '').replace('Re: ', ''),
+            description: `Suggested from email: ${email.snippet}\n\nOriginal Email Content:\n${email.content}`,
+            start,
+            end,
+            type: 'meeting' as const,
+            recurrence: 'none' as const
+        };
+
+        addEvent(suggestedEvent);
+        setIsEventModalOpen(true);
+    };
+
+    const categories: { id: EmailCategory | 'all'; label: string; icon: any }[] = [
+        { id: 'all', label: 'All', icon: Mail },
+        { id: 'urgent', label: 'Urgent', icon: AlertTriangle },
+        { id: 'meeting', label: 'Meetings', icon: Clock },
+        { id: 'updates', label: 'Updates', icon: MessageSquare },
+    ];
+
     return (
         <div className="flex h-full gap-4">
-            {/* Inbox List */}
-            <div className="w-80 bg-slate-50 border-r border-slate-100 overflow-y-auto p-2 shrink-0">
-                <div className="p-4 flex items-center justify-between">
-                    <h2 className="font-bold tracking-tight text-slate-800">Inbox</h2>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-600 text-[10px] font-bold uppercase tracking-wider border border-blue-200">12 New</span>
+            {/* Sidebar with Categories */}
+            <div className="w-64 bg-slate-50 border-r border-slate-100 flex flex-col p-4 shrink-0">
+                <div className="mb-6 flex items-center justify-between">
+                    <h2 className="font-bold tracking-tight text-slate-800 italic">Gmail Assistant</h2>
+                    <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">LIVE</span>
                 </div>
-                <div className="space-y-1 mt-2">
-                    {emails.map((email) => (
+                <nav className="space-y-1 flex-1 overflow-y-auto custom-scrollbar">
+                    {categories.map(cat => (
+                        <button
+                            key={cat.id}
+                            onClick={() => setActiveCategory(cat.id)}
+                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all ${activeCategory === cat.id
+                                ? 'bg-white text-blue-600 shadow-sm border border-slate-200'
+                                : 'text-slate-500 hover:bg-white hover:shadow-sm'
+                                }`}
+                        >
+                            <cat.icon className="w-4 h-4" />
+                            <span className="text-sm font-bold capitalize">{cat.label}</span>
+                        </button>
+                    ))}
+                </nav>
+
+                <div className="mt-auto p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <p className="text-[10px] font-bold text-blue-600 uppercase mb-1">Focus Mode</p>
+                    <p className="text-[11px] text-blue-800 leading-tight">AI is filtering non-essential notifications.</p>
+                </div>
+            </div>
+
+            {/* Inbox List */}
+            <div className="w-96 bg-white border-r border-slate-50 overflow-y-auto p-2 shrink-0">
+                <div className="p-4 flex items-center justify-between">
+                    <h2 className="font-bold tracking-tight text-slate-800 text-lg uppercase italic font-mono">Inbox</h2>
+                    <div className="flex items-center gap-2">
+                        <Star className="w-4 h-4 text-amber-400 fill-current" />
+                        <span className="text-xs text-slate-400 font-bold">{filteredEmails.length} Items</span>
+                    </div>
+                </div>
+                <div className="space-y-2 mt-2">
+                    {filteredEmails.map((email) => (
                         <button
                             key={email.id}
                             onClick={() => setSelectedEmail(email)}
-                            className={`w-full text-left p-4 rounded-xl transition-all border ${selectedEmail?.id === email.id
-                                ? 'bg-white border-blue-200 shadow-sm ring-1 ring-blue-100'
-                                : 'border-transparent hover:bg-white hover:border-slate-100'
+                            className={`w-full text-left p-4 rounded-2xl transition-all border relative group ${selectedEmail?.id === email.id
+                                ? 'bg-white border-blue-200 shadow-lg ring-1 ring-blue-50'
+                                : 'border-transparent hover:bg-slate-50/50'
                                 }`}
                         >
+                            {!email.isRead && (
+                                <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-full" />
+                            )}
                             <div className="flex justify-between items-start mb-1">
-                                <span className={`font-bold text-sm ${selectedEmail?.id === email.id ? 'text-blue-700' : 'text-slate-700'}`}>{email.from}</span>
-                                <span className="text-[10px] text-slate-400">{email.timestamp}</span>
+                                <span className={`font-bold text-sm ${selectedEmail?.id === email.id ? 'text-blue-700' : 'text-slate-800'}`}>{email.from}</span>
+                                <span className="text-[10px] text-slate-400 font-medium">{email.timestamp}</span>
                             </div>
-                            <p className="text-xs font-medium text-slate-600 truncate">{email.subject}</p>
-                            <p className="text-[11px] text-slate-400 truncate mt-1 opacity-80">{email.snippet}</p>
+                            <p className={`text-xs ${!email.isRead ? 'font-bold text-slate-900' : 'font-medium text-slate-600'} truncate`}>{email.subject}</p>
+                            <p className="text-[11px] text-slate-400 truncate mt-1 leading-relaxed">{email.snippet}</p>
+
+                            <div className="mt-3 flex gap-2">
+                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${email.category === 'urgent' ? 'bg-red-50 text-red-600 border border-red-100' :
+                                    email.category === 'meeting' ? 'bg-amber-50 text-amber-600 border border-amber-100' :
+                                        'bg-blue-50 text-blue-600 border border-blue-100'
+                                    }`}>
+                                    {email.category}
+                                </span>
+                            </div>
                         </button>
                     ))}
                 </div>
@@ -56,7 +135,7 @@ export const EmailWorkspace: React.FC = () => {
                             <div className="flex-1">
                                 <h2 className="text-2xl font-bold tracking-tight mb-4 text-slate-900">{selectedEmail.subject}</h2>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center font-bold text-lg text-white shadow-md shadow-blue-200">
+                                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center font-bold text-lg text-white shadow-md shadow-red-200">
                                         {selectedEmail.from[0]}
                                     </div>
                                     <div>
@@ -74,6 +153,15 @@ export const EmailWorkspace: React.FC = () => {
                                     <Sparkles className={`w-4 h-4 ${isSummarizing ? 'animate-spin' : ''}`} />
                                     {isSummarizing ? 'Analyzing...' : 'AI Summary'}
                                 </button>
+                                {selectedEmail.category === 'meeting' && (
+                                    <button
+                                        onClick={() => handleAddToCalendar(selectedEmail)}
+                                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 font-bold hover:bg-amber-100 transition-all shadow-sm text-sm"
+                                    >
+                                        <Calendar className="w-4 h-4" />
+                                        Add to Calendar
+                                    </button>
+                                )}
                             </div>
                         </div>
 
@@ -111,8 +199,11 @@ export const EmailWorkspace: React.FC = () => {
                                         className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-50 transition-all text-sm shadow-sm"
                                     />
                                 </div>
-                                <button className="px-6 py-3 rounded-xl bg-white border border-slate-200 font-bold text-sm hover:bg-slate-50 text-slate-600 transition-all shadow-sm">
-                                    Draft
+                                <button
+                                    onClick={() => setIsComposerOpen(true)}
+                                    className="px-6 py-3 rounded-xl bg-white border border-slate-200 font-bold text-sm hover:bg-slate-50 text-slate-600 transition-all shadow-sm"
+                                >
+                                    Reply
                                 </button>
                                 <button className="px-6 py-3 rounded-xl bg-blue-600 text-white font-bold text-sm hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20">
                                     Send
@@ -129,6 +220,15 @@ export const EmailWorkspace: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <SmartComposer
+                isOpen={isComposerOpen}
+                onClose={() => setIsComposerOpen(false)}
+                initialDraft={selectedEmail ? {
+                    to: selectedEmail.from,
+                    subject: `Re: ${selectedEmail.subject}`,
+                } : undefined}
+            />
         </div>
     );
 };

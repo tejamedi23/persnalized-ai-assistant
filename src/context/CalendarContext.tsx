@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { addWeeks, subWeeks, addDays, subDays, addMonths, subMonths } from 'date-fns';
+import { addWeeks, subWeeks, addDays, subDays, addMonths, subMonths, startOfWeek } from 'date-fns';
 import { v4 as uuidv4 } from 'uuid';
 import type { CalendarEvent, User, Conflict, CalendarViewMode } from '../types';
 import { generateSampleEvents } from '../utils/sampleData';
@@ -10,6 +10,7 @@ type Theme = 'light' | 'dark' | 'system';
 interface CalendarContextType {
     user: User | null;
     events: CalendarEvent[];
+    rawEvents: CalendarEvent[];
     currentDate: Date;
     conflicts: Conflict[];
     viewMode: CalendarViewMode;
@@ -36,7 +37,48 @@ interface CalendarContextType {
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
+const expandRecurringEvents = (events: CalendarEvent[], _date: Date): CalendarEvent[] => {
+    const expanded: CalendarEvent[] = [];
+    const windowStart = startOfWeek(_date, { weekStartsOn: 1 });
+    const windowEnd = addDays(windowStart, 30); // Expand for a month for safety
+
+    events.forEach(event => {
+        expanded.push(event);
+
+        if (event.recurrence && event.recurrence !== 'none') {
+            let nextStart = new Date(event.start);
+            let nextEnd = new Date(event.end);
+
+            // Limited expansion for demo/performance
+            for (let i = 0; i < 52; i++) { // Up to a year
+                if (event.recurrence === 'daily') {
+                    nextStart = addDays(nextStart, 1);
+                    nextEnd = addDays(nextEnd, 1);
+                } else if (event.recurrence === 'weekly') {
+                    nextStart = addDays(nextStart, 7);
+                    nextEnd = addDays(nextEnd, 7);
+                } else if (event.recurrence === 'monthly') {
+                    nextStart = addMonths(nextStart, 1);
+                    nextEnd = addMonths(nextEnd, 1);
+                }
+
+                if (nextStart > windowEnd) break;
+
+                expanded.push({
+                    ...event,
+                    id: `${event.id}-occ-${i}`,
+                    start: new Date(nextStart),
+                    end: new Date(nextEnd),
+                });
+            }
+        }
+    });
+
+    return expanded;
+};
+
 export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    // ... rest of provider ...
     const [user, setUser] = useState<User | null>(null);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -117,7 +159,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [events]);
 
     const login = (name: string, email: string) => {
-        const newUser = { id: uuidv4(), name, email };
+        const newUser = { id: uuidv4(), name, email, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff` };
         setUser(newUser);
 
         const storedEvents = localStorage.getItem('calendar_events');
@@ -176,10 +218,13 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const goToToday = () => setCurrentDate(new Date());
 
+    const expandedEvents = expandRecurringEvents(events, currentDate);
+
     return (
         <CalendarContext.Provider value={{
             user,
-            events,
+            events: expandedEvents,
+            rawEvents: events, // Added to type soon
             currentDate,
             conflicts,
             viewMode,

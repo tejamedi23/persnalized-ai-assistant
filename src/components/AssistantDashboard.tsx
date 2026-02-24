@@ -1,31 +1,52 @@
-import React, { useState } from 'react';
-import { Mail, Calendar, Plane, Search, Send, LayoutDashboard, Settings, Plus, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, Calendar, Plane, Search, Send, LayoutDashboard, Settings, Plus, ChevronLeft, ChevronRight, Sparkles, AlertTriangle, Menu, BarChart2, Bell, LogOut } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { EmailWorkspace } from './EmailWorkspace';
-import { FlightSearch } from './FlightSearch';
+import { TravelSearch } from './TravelSearch';
 import { Dashboard } from './Dashboard';
+import { QuickAddBar } from './QuickAddBar';
+import { NotificationCenter } from './NotificationCenter';
 import { useCalendar } from '../context/CalendarContext';
-import { format } from 'date-fns';
+import { format, startOfWeek, addDays } from 'date-fns';
 
+import { useAI } from '../context/AIContext';
 import { useAIInsights } from '../hooks/useAIInsights';
+import { MessageSquareText } from 'lucide-react';
 
 export const AssistantDashboard: React.FC = () => {
+    const { proactiveSuggestions, executeAction } = useAI();
     const [activeTab, setActiveTab] = useState<'mail' | 'schedule' | 'travel'>('schedule');
+    const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
     const [chatInput, setChatInput] = useState('');
     const {
         currentDate, next, prev, goToToday,
+        viewMode, setViewMode,
         setIsEventModalOpen, setIsMeetingFinderOpen, setIsConflictSidebarOpen,
-        conflicts, events, addEvent
+        conflicts, events, addEvent, user, login, logout
     } = useCalendar();
 
     const insight = useAIInsights(events, currentDate, (data) => addEvent(data));
 
     const tabs = [
-        { id: 'schedule', icon: Calendar, label: 'Focus Schedule', color: 'bg-blue-600' },
-        { id: 'mail', icon: Mail, label: 'Smart Inbox', color: 'bg-pink-500' },
-        { id: 'travel', icon: Plane, label: 'Travel Plans', color: 'bg-amber-500' }
+        { id: 'schedule', icon: Calendar, label: 'Calendar', color: 'bg-blue-600' },
+        { id: 'mail', icon: Mail, label: 'Email', color: 'bg-pink-500' },
+        { id: 'travel', icon: Plane, label: 'Travel', color: 'bg-amber-500' },
     ];
+
+    const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                e.preventDefault();
+                setIsQuickAddOpen(prev => !prev);
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     return (
         <div className="flex h-screen w-full bg-brand-bg text-brand-text overflow-hidden font-sans">
@@ -37,7 +58,9 @@ export const AssistantDashboard: React.FC = () => {
                         <img src="/logo.png" alt="Logo" className="w-full h-full object-cover p-1 bg-white" />
                     </div>
                     <div className="hidden lg:block">
-                        <h1 className="font-bold text-slate-800 tracking-tight leading-tight text-lg">Personalized<br />AI Assistant</h1>
+                        <h1 className="font-bold text-slate-800 tracking-tight leading-tight text-xl">
+                            AI<span className="text-blue-600">Assistant</span>
+                        </h1>
                     </div>
                 </div>
 
@@ -74,18 +97,41 @@ export const AssistantDashboard: React.FC = () => {
                     ))}
                 </nav>
 
-                <div className="mt-auto px-4 w-full">
-                    <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white shadow-xl relative overflow-hidden group cursor-pointer hidden lg:block hover:-translate-y-1 transition-transform duration-300">
-                        <div className="absolute top-0 right-0 p-3 opacity-20 group-hover:rotate-12 transition-transform duration-500">
-                            <Sparkles className="w-12 h-12" />
+                <div className="mt-auto px-4 w-full space-y-4">
+                    {user ? (
+                        <div className="p-3 bg-white border border-slate-200 rounded-2xl flex items-center gap-3 shadow-sm hover:border-blue-200 transition-all cursor-pointer group" onClick={logout}>
+                            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-200 group-hover:scale-105 transition-transform">
+                                {user.name[0]}
+                            </div>
+                            <div className="hidden lg:block overflow-hidden">
+                                <div className="text-sm font-bold text-slate-800 truncate">{user.name}</div>
+                                <div className="text-[10px] text-slate-500 truncate">{user.email}</div>
+                            </div>
+                            <LogOut className="w-4 h-4 ml-auto text-slate-300 group-hover:text-red-500 transition-colors hidden lg:block" />
                         </div>
-                        <div className="font-bold text-lg mb-1 relative z-10">Upgrade to Pro</div>
-                        <p className="text-xs text-slate-300 mb-3 relative z-10">Unlock advanced AI analysis.</p>
-                        <div className="text-[10px] font-bold bg-white/20 inline-block px-2 py-1 rounded relative z-10">GET PRO</div>
+                    ) : (
+                        <button
+                            onClick={() => login('Teja Medi', 'tejamedi.edu@gmail.com')}
+                            className="w-full flex items-center justify-center gap-3 py-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold hover:bg-slate-50 transition-all shadow-sm group"
+                        >
+                            <img src="https://www.google.com/favicon.ico" alt="Google" className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            <span className="hidden lg:block text-sm">Sign in with Google</span>
+                        </button>
+                    )}
+
+                    <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-slate-700 shadow-sm relative overflow-hidden group cursor-pointer hidden lg:block hover:bg-slate-100 transition-colors duration-300">
+                        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:rotate-12 transition-transform duration-500">
+                            <Sparkles className="w-12 h-12 text-blue-600" />
+                        </div>
+                        <div className="font-bold text-sm mb-1 relative z-10 text-slate-800">Support Center</div>
+                        <p className="text-[10px] text-slate-500 mb-3 relative z-10">Access documentation and help.</p>
+                        <div className="text-[10px] font-bold text-blue-600 inline-block px-2 py-1 bg-blue-50 rounded relative z-10">VIEW HELP</div>
                     </div>
-                    <div className="lg:hidden flex justify-center">
-                        <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold">TM</div>
-                    </div>
+                    {!user && (
+                        <div className="lg:hidden flex justify-center">
+                            <div className="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-bold">?</div>
+                        </div>
+                    )}
                 </div>
             </aside>
 
@@ -94,25 +140,49 @@ export const AssistantDashboard: React.FC = () => {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/40 via-transparent to-transparent pointer-events-none" />
 
                 {/* Dynamic Header */}
-                <header className="h-16 lg:h-20 px-6 lg:px-8 flex items-center justify-between z-10 sticky top-0 bg-white/80 backdrop-blur-md border-b border-white/60">
-                    <div className="flex items-center gap-4 flex-1">
+                <header className="h-16 lg:h-20 px-6 lg:px-8 flex items-center justify-between z-10 sticky top-0 bg-white/50 backdrop-blur-md border-b border-slate-200">
+                    <div className="flex items-center gap-8 flex-1">
                         {activeTab === 'schedule' ? (
-                            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
-                                <h2 className="text-2xl font-bold text-slate-800 tracking-tight min-w-[200px]">
-                                    {format(currentDate, 'MMMM yyyy')}
-                                </h2>
-                                <div className="hidden md:flex items-center gap-1 bg-white border border-slate-200 p-1 rounded-xl shadow-sm">
-                                    <button onClick={prev} className="p-1.5 hover:bg-slate-50 text-slate-500 hover:text-slate-900 rounded-lg transition-colors">
-                                        <ChevronLeft className="w-4 h-4" />
-                                    </button>
-                                    <button onClick={goToToday} className="px-3 py-1 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-lg transition-colors uppercase tracking-widest">
-                                        Today
-                                    </button>
-                                    <button onClick={next} className="p-1.5 hover:bg-slate-50 text-slate-500 hover:text-slate-900 rounded-lg transition-colors">
-                                        <ChevronRight className="w-4 h-4" />
-                                    </button>
+                            <>
+                                <div className="flex items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+                                    <h2 className="text-xl font-bold text-slate-800 tracking-tight min-w-[240px]">
+                                        {format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'MMMM d')} - {format(addDays(startOfWeek(currentDate, { weekStartsOn: 1 }), 6), 'd, yyyy')}
+                                    </h2>
+                                    <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                                        <button onClick={prev} className="p-1.5 hover:bg-white hover:shadow-sm text-slate-500 hover:text-blue-600 rounded-lg transition-all">
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={goToToday} className="px-3 py-1 text-[10px] font-bold text-slate-600 hover:text-blue-600 transition-colors uppercase tracking-widest">
+                                            Today
+                                        </button>
+                                        <button onClick={next} className="p-1.5 hover:bg-white hover:shadow-sm text-slate-500 hover:text-blue-600 rounded-lg transition-all">
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* View Switcher */}
+                                <div className="hidden md:flex items-center gap-6 border-l border-slate-200 pl-8">
+                                    {['day', 'week', 'month', 'agenda', 'timetable'].map((mode) => (
+                                        <button
+                                            key={mode}
+                                            onClick={() => setViewMode(mode as any)}
+                                            className={clsx(
+                                                "text-sm font-semibold capitalize transition-all relative py-2",
+                                                viewMode === mode ? "text-blue-600" : "text-slate-400 hover:text-slate-600"
+                                            )}
+                                        >
+                                            {mode}
+                                            {viewMode === mode && (
+                                                <motion.div
+                                                    layoutId="activeView"
+                                                    className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600 rounded-full"
+                                                />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
                         ) : (
                             <div className="flex items-center gap-4 flex-1 max-w-xl group">
                                 <div className="relative w-full">
@@ -156,10 +226,34 @@ export const AssistantDashboard: React.FC = () => {
                                 </button>
                             </div>
                         )}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsAIDrawerOpen(!isAIDrawerOpen)}
+                            className={clsx(
+                                "p-2.5 rounded-xl border transition-all flex items-center gap-2",
+                                isAIDrawerOpen ? "bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200" : "bg-white text-slate-500 border-slate-200 hover:border-blue-200"
+                            )}
+                        >
+                            <MessageSquareText className="w-5 h-5" />
+                            <span className="text-xs font-bold hidden sm:block">AI Lens</span>
+                        </motion.button>
+                        <div className="w-px h-8 bg-slate-200 mx-1" />
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                            className="p-2.5 rounded-xl bg-white border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm relative mr-2"
+                        >
+                            <Bell className="w-5 h-5" />
+                            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                        </motion.button>
                         <div className="w-px h-8 bg-slate-200 mx-2" />
-                        <button className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-bold shadow-sm hover:shadow-md transition-all">
-                            TM
-                        </button>
+                        {user && (
+                            <button className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-bold shadow-sm hover:shadow-md transition-all overflow-hidden group">
+                                {user.avatar ? <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" /> : user.name[0]}
+                            </button>
+                        )}
                     </div>
                 </header>
 
@@ -175,105 +269,134 @@ export const AssistantDashboard: React.FC = () => {
                         <div className="h-full w-full bg-white rounded-[28px] overflow-hidden shadow-inner">
                             {activeTab === 'schedule' && <Dashboard />}
                             {activeTab === 'mail' && <EmailWorkspace />}
-                            {activeTab === 'travel' && <FlightSearch />}
+                            {activeTab === 'travel' && <TravelSearch />}
                         </div>
                     </motion.div>
                 </div>
             </main>
 
-            {/* Right Panel: AI Lens */}
-            <aside className="w-80 glass-panel m-4 ml-0 p-5 hidden xl:flex flex-col gap-6 border-l border-white/50 shadow-soft bg-white/90">
-                <div className="flex items-center justify-between px-1">
-                    <h3 className="font-bold text-lg tracking-tight text-slate-800 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4 text-blue-600" />
-                        AI Lens
-                    </h3>
-                    <div className="flex items-center gap-2 px-2 py-1 bg-green-50 text-green-700 rounded-full border border-green-100 text-[10px] font-bold uppercase">
-                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                        Online
-                    </div>
-                </div>
-
-                <div className="flex-1 flex flex-col gap-4 overflow-y-auto scroll-hide pr-1">
-                    {/* Dynamic Insight Card */}
-                    <AnimatePresence mode="wait">
-                        {insight && (
-                            <motion.div
-                                key={insight.title}
-                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
-                                transition={{ duration: 0.3 }}
-                                className={clsx(
-                                    "p-5 rounded-2xl border shadow-sm relative group overflow-hidden ring-1",
-                                    insight.type === 'focus' ? "bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100 ring-blue-500/5" :
-                                        insight.type === 'warning' ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100 ring-amber-500/5" :
-                                            insight.type === 'success' ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-100 ring-emerald-500/5" :
-                                                "bg-white border-slate-100"
-                                )}
-                            >
-                                <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:scale-110 transition-transform">
-                                    <Calendar className={clsx("w-20 h-20",
-                                        insight.type === 'focus' ? "text-blue-600" :
-                                            insight.type === 'warning' ? "text-amber-600" :
-                                                "text-emerald-600"
-                                    )} />
-                                </div>
-                                <p className={clsx("text-[10px] font-bold uppercase tracking-widest mb-3 font-mono",
-                                    insight.type === 'focus' ? "text-blue-600" :
-                                        insight.type === 'warning' ? "text-amber-600" :
-                                            "text-emerald-600"
-                                )}>{insight.type === 'warning' ? 'Attention' : 'Insight'}</p>
-
-                                <h4 className="font-bold text-slate-800 mb-1">{insight.title}</h4>
-                                <p className="text-sm text-slate-600 leading-relaxed font-medium mb-4">
-                                    {insight.message}
-                                </p>
-
-                                {insight.action && (
-                                    <button
-                                        onClick={insight.action.onClick}
-                                        className={clsx("text-xs font-bold px-3 py-2 rounded-lg shadow-sm border transition-colors flex items-center gap-2 w-fit",
-                                            insight.type === 'focus' ? "bg-white text-blue-600 border-blue-100 hover:bg-blue-50" :
-                                                insight.type === 'warning' ? "bg-white text-amber-600 border-amber-100 hover:bg-amber-50" :
-                                                    "bg-white text-emerald-600 border-emerald-100 hover:bg-emerald-50"
-                                        )}
-                                    >
-                                        {insight.action.label} <ChevronRight className="w-3 h-3" />
-                                    </button>
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <div className="space-y-3">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Context Actions</p>
-                        {[
-                            { label: "Find flights to London", icon: Plane },
-                            { label: "Summarize unread emails", icon: Mail },
-                            { label: "Check schedule conflicts", icon: AlertTriangle }
-                        ].map((action, i) => (
-                            <button key={i} className="w-full text-left p-3 rounded-2xl bg-white border border-slate-100 hover:border-blue-200 hover:shadow-md transition-all text-sm group flex items-center justify-between group">
-                                <span className="text-slate-600 group-hover:text-blue-600 transition-colors font-medium">{action.label}</span>
-                                <action.icon className="w-4 h-4 text-slate-300 group-hover:text-blue-500 transition-colors" />
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="relative">
-                    <div className="relative group">
-                        <input
-                            type="text"
-                            placeholder="Ask me anything..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 pr-12 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all text-sm font-medium text-slate-800 placeholder:text-slate-400"
+            {/* AI Assistant Drawer - overlay only */}
+            <AnimatePresence>
+                {isAIDrawerOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAIDrawerOpen(false)}
+                            className="fixed inset-0 bg-slate-900/10 backdrop-blur-[2px] z-[90]"
                         />
-                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all hover:scale-105 active:scale-95">
-                            <Send className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            </aside>
+                        <motion.aside
+                            initial={{ x: '100%', opacity: 0.5 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            exit={{ x: '100%', opacity: 0.5 }}
+                            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                            className="fixed right-0 top-0 bottom-0 w-[380px] sm:w-[420px] bg-white border-l border-slate-200 shadow-2xl z-[100] flex flex-col p-6"
+                        >
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
+                                        <Sparkles className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <h2 className="font-bold text-slate-950">AI Assistant</h2>
+                                        <div className="flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-none mt-0.5">Active Insight</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setIsAIDrawerOpen(false)}
+                                    className="p-2 hover:bg-slate-50 rounded-xl transition-all text-slate-400 hover:text-slate-600"
+                                >
+                                    <ChevronRight className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto scroll-hide space-y-6">
+                                <div className="space-y-4">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Deep Intelligence</p>
+                                    {proactiveSuggestions.map((suggestion) => (
+                                        <motion.div
+                                            key={suggestion.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="p-5 rounded-2xl bg-slate-50 border border-slate-100 shadow-sm relative group overflow-hidden"
+                                        >
+                                            <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:scale-110 transition-transform">
+                                                <Sparkles className="w-12 h-12 text-blue-600" />
+                                            </div>
+                                            <h4 className="font-bold text-slate-800 mb-2">{suggestion.label}</h4>
+                                            <p className="text-[11px] text-slate-500 mb-4 leading-relaxed">Based on your activity, I recommend addressing this now.</p>
+                                            <button
+                                                onClick={() => executeAction(suggestion)}
+                                                className={clsx("text-xs font-bold px-4 py-2.5 rounded-xl shadow-sm border transition-all flex items-center gap-2 w-full justify-center group/btn",
+                                                    suggestion.isPrimary ? "bg-blue-600 text-white border-blue-600 hover:bg-blue-700 shadow-blue-200 shadow-lg" : "bg-white text-slate-600 border-slate-200 hover:border-blue-200 hover:text-blue-600"
+                                                )}
+                                            >
+                                                Execute Action <ChevronRight className="w-3 h-3 group-hover/btn:translate-x-0.5 transition-transform" />
+                                            </button>
+                                        </motion.div>
+                                    ))}
+                                    {proactiveSuggestions.length === 0 && (
+                                        <div className="p-12 text-center text-slate-300">
+                                            <Sparkles className="w-10 h-10 mx-auto mb-3 opacity-20" />
+                                            <p className="text-xs font-bold uppercase tracking-widest opacity-50">Monitoring your workflow...</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Universal Command</p>
+                                    <div className="relative group">
+                                        <input
+                                            type="text"
+                                            placeholder="Ask anything..."
+                                            className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm font-medium text-slate-800"
+                                            value={chatInput}
+                                            onChange={(e) => setChatInput(e.target.value)}
+                                        />
+                                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+                                            <Send className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="mt-6 p-5 bg-gradient-to-br from-slate-50 to-white rounded-3xl border border-slate-100 shadow-inner">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Assistant Status</p>
+                                </div>
+                                <p className="text-[11px] text-slate-600 leading-relaxed">I am analyzing your Gmail and Calendar events to provide real-time suggestions and time-zone conversions.</p>
+                            </div>
+                        </motion.aside>
+                    </>
+                )}
+            </AnimatePresence>
+
+            <QuickAddBar
+                isOpen={isQuickAddOpen}
+                onClose={() => setIsQuickAddOpen(false)}
+                onAdd={(text) => {
+                    // Placeholder for smart parsing
+                    console.log('Smart Add:', text);
+                    addEvent({
+                        title: text,
+                        description: 'Added via Quick Add',
+                        start: new Date(),
+                        end: new Date(Date.now() + 3600000),
+                        type: 'meeting',
+                        recurrence: 'none'
+                    });
+                }}
+            />
+
+            <NotificationCenter
+                isOpen={isNotificationsOpen}
+                onClose={() => setIsNotificationsOpen(false)}
+            />
         </div>
     );
 };

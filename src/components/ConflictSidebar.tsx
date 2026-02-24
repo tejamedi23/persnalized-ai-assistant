@@ -36,7 +36,7 @@ export const ConflictSidebar: React.FC<{ onClose: () => void }> = ({ onClose }) 
         <div className="w-96 bg-white border-l border-slate-200 h-full flex flex-col shadow-xl absolute right-0 top-0 z-50 transform transition-transform duration-300">
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <div className="flex items-center space-x-2">
-                    <Activity className="h-5 w-5 text-indigo-600" />
+                    <Activity className="h-5 w-5 text-blue-600" />
                     <h2 className="font-semibold text-slate-800">Conflict Analytics</h2>
                 </div>
                 <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full">
@@ -116,7 +116,7 @@ export const ConflictSidebar: React.FC<{ onClose: () => void }> = ({ onClose }) 
                                             <div className="mt-3 flex items-center space-x-2">
                                                 <button
                                                     onClick={() => handleAutoResolve(conflict.id, event1.id)}
-                                                    className="flex-1 flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 transition-colors"
+                                                    className="flex-1 flex items-center justify-center px-3 py-1.5 border border-transparent text-xs font-bold rounded text-blue-700 bg-blue-100 hover:bg-blue-200 transition-colors"
                                                 >
                                                     Move "{event1.title}"
                                                     <ArrowRight className="ml-1 h-3 w-3" />

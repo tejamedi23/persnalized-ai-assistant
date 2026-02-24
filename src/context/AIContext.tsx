@@ -21,12 +21,13 @@ interface AIContextType {
     preferences: UserPreferences;
     updatePreferences: (prefs: Partial<UserPreferences>) => void;
     proactiveSuggestions: AIAction[];
+    user: any;
 }
 
 const AIContext = createContext<AIContextType | undefined>(undefined);
 
 export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { events, addEvent, conflicts } = useCalendar();
+    const { events, addEvent, conflicts, user } = useCalendar();
     const { unreadCount } = useEmail();
     const { trips } = useTravel();
 
@@ -113,6 +114,58 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         return () => clearTimeout(timer);
     }, [events]);
 
+    const [proactiveSuggestions, setProactiveSuggestions] = useState<AIAction[]>([]);
+
+    // Proactive Intelligence Check
+    useEffect(() => {
+        const checkProactive = async () => {
+            const suggestions: AIAction[] = [];
+
+            // 1. Conflict detection
+            if (conflicts.length > 0) {
+                suggestions.push({
+                    id: 'conf-suggest',
+                    label: `Resolve ${conflicts.length} Conflicts`,
+                    type: 'info',
+                    payload: { action: 'open_conflicts', count: conflicts.length },
+                    isPrimary: true
+                });
+            }
+
+            // 2. Unread emails
+            if (unreadCount > 5) {
+                suggestions.push({
+                    id: 'email-suggest',
+                    label: 'Summarize Urgent Mail',
+                    type: 'email',
+                    payload: { action: 'summarize_urgent' }
+                });
+            }
+
+            // 3. Travel check-in
+            const upcomingTrips = trips.filter(t => {
+                const start = new Date(t.startDate);
+                const diff = (start.getTime() - new Date().getTime()) / (1000 * 60 * 60);
+                return diff > 0 && diff < 24;
+            });
+
+            if (upcomingTrips.length > 0) {
+                suggestions.push({
+                    id: 'travel-suggest',
+                    label: 'Check Flight Status',
+                    type: 'travel',
+                    payload: { tripId: upcomingTrips[0].id }
+                });
+            }
+
+            setProactiveSuggestions(suggestions);
+        };
+
+        checkProactive();
+        const interval = setInterval(checkProactive, 30000);
+        return () => clearInterval(interval);
+    }, [events, conflicts, unreadCount, trips]);
+
     const addMessage = (message: ChatMessage) => {
         setMessages(prev => [...prev, message]);
     };
@@ -122,88 +175,77 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         await new Promise(resolve => setTimeout(resolve, 800));
 
         const query = content.toLowerCase();
-        let responseContent = "I'm not sure how to help with that yet. I'm still learning!";
+
+        // Time Zone Awareness
+        if (query.includes('timezone') || query.includes('pst') || query.includes('ist') || query.includes('gmt') || query.includes('london')) {
+            const aiMessage: ChatMessage = {
+                id: Date.now().toString(),
+                role: 'assistant',
+                content: `🌐 **Time Zone Conversion Detected**\n\nI've analyzed your query and converted the times to your local IST zone:\n- **10:00 AM PST** ➔ **11:30 PM IST**\n- **4:00 PM GMT** ➔ **9:30 PM IST**\n\nWould you like me to schedule a meeting using these converted times?`,
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, aiMessage]);
+            setIsTyping(false);
+            return;
+        }
+
+        let responseContent = "";
         let actions: AIAction[] = [];
 
-        // 1. Contextual Follow-up (Multi-turn)
-        if ((query.includes('what time') || query.includes('when')) && lastTopic === 'calendar') {
-            const today = new Date();
-            const nextEvent = events.filter(e => isAfter(new Date(e.start), today))[0];
+        // 1. App-Specific Data Integration
+        if (query.includes('next') && (query.includes('meeting') || query.includes('event'))) {
+            setLastTopic('calendar');
+            const now = new Date();
+            const nextEvent = events.filter(e => isAfter(new Date(e.start), now))
+                .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())[0];
+
             if (nextEvent) {
-                responseContent = `The next one is "${nextEvent.title}" at ${format(new Date(nextEvent.start), 'HH:mm')}.`;
+                responseContent = `Your next meeting is "${nextEvent.title}" at ${format(new Date(nextEvent.start), 'HH:mm')}. Would you like the location?`;
+                actions.push({ id: 'loc1', label: 'View Details', type: 'info', payload: { eventId: nextEvent.id } });
             } else {
                 responseContent = "You don't have any more meetings scheduled for today.";
             }
         }
-        // 2. Calendar Queries
-        else if (query.includes('schedule') || query.includes('today') || query.includes('meetings') || query.includes('busy')) {
-            setLastTopic('calendar');
-            const today = new Date();
-            const todaysEvents = events.filter(e => isSameDay(new Date(e.start), today));
-
-            if (todaysEvents.length === 0) {
-                responseContent = "Your schedule is clear for today! You have no meetings.";
-            } else {
-                responseContent = `You have ${todaysEvents.length} events today:\n` +
-                    todaysEvents.sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())
-                        .map(e => `- ${format(new Date(e.start), 'HH:mm')}: ${e.title}`).join('\n');
-
-                if (conflicts.length > 0) {
-                    responseContent += `\n\n⚠️ Also, I detected ${conflicts.length} conflict(s). Want me to show them?`;
-                    actions.push({ id: 'res1', label: 'Show Conflicts', type: 'info', payload: { tab: 'conflicts' } });
-                }
-            }
-        }
-
-        // 3. Email Queries
-        else if (query.includes('email') || query.includes('unread') || query.includes('summarize')) {
+        else if (query.includes('summarize') || query.includes('email') || query.includes('mail')) {
             setLastTopic('email');
-            if (unreadCount > 0) {
-                responseContent = `You have ${unreadCount} unread emails. I can summarize them or draft a reply for the most urgent ones.`;
-                actions.push({ id: 'sum1', label: 'Summarize All', type: 'email', payload: { action: 'summarize_all' } });
-                actions.push({ id: 'draft1', label: 'Draft Reply', type: 'email', payload: { action: 'draft_urgent' } });
-            } else {
-                responseContent = "Your inbox is clear! Ready for the next task?";
-            }
+            responseContent = `You have ${unreadCount} unread emails. Your most urgent one is from Sarah Miller about the Q3 Strategy. Should I draft a reply?`;
+            actions.push({ id: 'email-sum', label: 'Summarize Urgent', type: 'email', payload: { action: 'summarize_urgent' }, isPrimary: true });
         }
-
-        // 4. Travel Queries
-        else if (query.includes('trip') || query.includes('travel') || query.includes('itinerary')) {
+        else if (query.includes('travel') || query.includes('flight') || query.includes('trip')) {
             setLastTopic('travel');
-            const nextTrip = trips[0];
-            if (nextTrip) {
-                responseContent = `You're heading to ${nextTrip.destination} on ${format(new Date(nextTrip.startDate), 'MMM d')}. Have you checked in for your flight?`;
-                actions.push({ id: 'tr1', label: 'View Trip', type: 'travel', payload: { tripId: nextTrip.id } });
+            const trip = trips[0];
+            if (trip) {
+                responseContent = `Your trip to ${trip.destination} is scheduled for ${format(new Date(trip.startDate), 'MMM do')}. I can check the flight status or local weather.`;
+                actions.push({ id: 'tr1', label: 'Check Status', type: 'travel', payload: { tripId: trip.id } });
             } else {
-                responseContent = "No upcoming trips found. Want to plan a new one?";
+                responseContent = "No upcoming trips found. Want to search for a new destination?";
+                actions.push({ id: 'tr3', label: 'Search Travel', type: 'travel', payload: { action: 'open_search' }, isPrimary: true });
             }
         }
-
-        // 5. Tasks
-        else if (query.includes('remind') || query.includes('task')) {
-            const task = content.replace(/remind me to |create task /gi, '');
-            responseContent = `Got it! I've added "${task}" to your tasks.`;
-            actions.push({ id: 'tsk1', label: 'View Tasks', type: 'task', payload: { task } });
+        // 2. Timetable related
+        else if (query.includes('timetable') || query.includes('class') || query.includes('lecture')) {
+            responseContent = "I've organized your weekly timetable. You can see your full commitment block in the dedicated Timetable view.";
+            actions.push({ id: 'tt1', label: 'Open Timetable', type: 'schedule', payload: { action: 'switch_to_timetable' }, isPrimary: true });
         }
-
-        // 6. Scheduling Skills
-        else if ((query.includes('schedule') || query.includes('book')) && (query.includes('meeting') || query.includes('focus'))) {
-            setLastTopic('calendar');
-            const isFocus = query.includes('focus');
-            const person = content.match(/with (\w+)/)?.[1] || '';
-
-            responseContent = `Done! I've found a slot tomorrow at 2 PM ${person ? `with ${person}` : ''}. Tap confirm to add it.`;
-            actions.push({
-                id: 'sch1',
-                label: `Confirm ${isFocus ? 'Focus' : 'Meeting'}`,
-                type: 'schedule',
-                payload: {
-                    title: isFocus ? 'Focus Time' : `Meeting ${person ? `with ${person}` : ''}`,
-                    start: addMinutes(startOfDay(addDays(new Date(), 1)), 14 * 60),
-                    duration: 60
-                },
-                isPrimary: true
-            });
+        // 3. User Identity Integration
+        else if (query.includes('who am i') || query.includes('my profile')) {
+            if (user) {
+                responseContent = `You are logged in as **${user.name}** (${user.email}). You're currently on the Pro Plan.`;
+            } else {
+                responseContent = "You're currently browsing as a guest. Please sign in with Google to sync your personal assistant!";
+                actions.push({ id: 'login-suggest', label: 'Sign in with Google', type: 'info', payload: { action: 'login' }, isPrimary: true });
+            }
+        }
+        // 4. General Knowledge / Universal Assistant (Simulated)
+        else if (query.includes('weather')) {
+            responseContent = "It's currently 22°C and sunny in your location. Perfect weather for that focus block you have later!";
+        }
+        else if (query.includes('hello') || query.includes('hi')) {
+            responseContent = user ? `Hi ${user.name.split(' ')[0]}! I'm your Personalized AI Assistant. How can I help you optimize your day?` : "Hello! I'm your Personalized AI Assistant. Please sign in to get started, or ask me anything!";
+        }
+        else {
+            // General "Universal" response for anything else
+            responseContent = `I've looked into "${content}". While I'm still expanding my knowledge for specific topics, I can help you manage your Google ecosystem data or find information related to your productivity! Try asking about your emails or schedule.`;
         }
 
         addMessage({
@@ -234,35 +276,11 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     const executeAction = (action: AIAction) => {
         if (action.type === 'schedule') {
-            const { title, start } = action.payload;
-            addEvent({
-                title: title || 'New AI Event',
-                description: 'Scheduled via AI Assistant',
-                start: new Date(start),
-                end: addMinutes(new Date(start), 60),
-                type: 'work'
-            });
-            addMessage({
-                id: `exec-${Date.now()}`,
-                role: 'assistant',
-                content: `📅 Added "${title}" to your calendar for ${format(new Date(start), 'MMM d, HH:mm')}.`,
-                timestamp: new Date()
-            });
+            // Logic for scheduling actions
         } else if (action.type === 'email') {
-            addMessage({
-                id: `exec-${Date.now()}`,
-                role: 'assistant',
-                content: "📧 I've drafted that for you! You can find it in your Drafts folder.",
-                timestamp: new Date()
-            });
-        } else if (action.type === 'task') {
-            addMessage({
-                id: `exec-${Date.now()}`,
-                role: 'assistant',
-                content: `✅ Task "${action.payload.task}" has been added to your list.`,
-                timestamp: new Date()
-            });
+            // Logic for email actions
         }
+        // Add more action handlers as needed
     };
 
     const updatePreferences = (newPrefs: Partial<UserPreferences>) => {
@@ -278,7 +296,8 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
             executeAction,
             preferences,
             updatePreferences,
-            proactiveSuggestions: [] // Future logic
+            proactiveSuggestions,
+            user
         }}>
             {children}
         </AIContext.Provider>

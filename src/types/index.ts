@@ -7,6 +7,7 @@ export interface CalendarEvent {
     start: Date;
     end: Date;
     type: EventType;
+    recurrence?: 'none' | 'daily' | 'weekly' | 'monthly';
 }
 
 export interface User {
@@ -26,7 +27,7 @@ export interface Conflict {
     timestamp: Date;
 }
 
-export type CalendarViewMode = 'day' | 'week' | 'month' | 'agenda' | 'analytics' | 'travel' | 'email';
+export type CalendarViewMode = 'day' | 'week' | 'month' | 'agenda' | 'travel' | 'email' | 'timetable';
 
 export interface CalendarState {
     events: CalendarEvent[];

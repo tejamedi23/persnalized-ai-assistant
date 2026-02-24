@@ -61,8 +61,8 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         >
                             <div className="flex justify-between items-start mb-1">
                                 <span className={`text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full ${isToday(day)
-                                        ? 'bg-indigo-600 text-white'
-                                        : isCurrentMonth ? 'text-slate-700' : 'text-slate-400'
+                                    ? 'bg-blue-600 text-white'
+                                    : isCurrentMonth ? 'text-slate-700' : 'text-slate-400'
                                     }`}>
                                     {format(day, 'd')}
                                 </span>
@@ -75,9 +75,9 @@ export const MonthView: React.FC<MonthViewProps> = ({
                                         <div
                                             key={event.id}
                                             className={`text-[10px] truncate px-1.5 py-0.5 rounded border-l-2 ${hasConflict ? 'bg-red-50 border-red-500 text-red-700 font-bold' :
-                                                    event.type === 'meeting' ? 'bg-blue-50 border-blue-400 text-blue-700' :
-                                                        event.type === 'personal' ? 'bg-orange-50 border-orange-400 text-orange-700' :
-                                                            'bg-slate-100 border-slate-400 text-slate-700'
+                                                event.type === 'meeting' ? 'bg-blue-50 border-blue-400 text-blue-700' :
+                                                    event.type === 'personal' ? 'bg-orange-50 border-orange-400 text-orange-700' :
+                                                        'bg-slate-100 border-slate-400 text-slate-700'
                                                 }`}
                                         >
                                             {format(event.start, 'h:mma')} {event.title}
