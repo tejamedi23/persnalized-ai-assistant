@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { suggestAlternative } from '../utils/conflictDetection';
 
-export const ConflictSidebar: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+export const ConflictSidebar: React.FC<{ onClose: () => void; inline?: boolean }> = ({ onClose, inline }) => {
     const { conflicts, events, resolveConflict } = useCalendar();
 
     const stats = useMemo(() => {
@@ -33,7 +33,7 @@ export const ConflictSidebar: React.FC<{ onClose: () => void }> = ({ onClose }) 
     };
 
     return (
-        <div className="w-96 bg-white border-l border-slate-200 h-full flex flex-col shadow-xl absolute right-0 top-0 z-50 transform transition-transform duration-300">
+        <div className={`${inline ? 'relative w-full border-none shadow-none h-auto' : 'fixed right-0 top-0 w-96 h-full shadow-xl z-50'} bg-white border-l border-slate-200 flex flex-col transform transition-transform duration-300`}>
             <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                 <div className="flex items-center space-x-2">
                     <Activity className="h-5 w-5 text-blue-600" />

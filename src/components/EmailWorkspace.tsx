@@ -1,50 +1,35 @@
-import React, { useState, useEffect } from 'react';
-import { getEmails, Email, summarizeEmail, EmailCategory } from '../services/EmailService';
-import { Mail, MessageSquare, Sparkles, Clock, Star, AlertTriangle, X, Calendar } from 'lucide-react';
+import React, { useState } from 'react';
+import { Mail, MessageSquare, Sparkles, Clock, Star, AlertTriangle, X, Calendar, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SmartComposer } from './SmartComposer';
 import { useCalendar } from '../context/CalendarContext';
+import { useEmail } from '../context/EmailContext';
+import { EmailCategory } from '../types';
 
 export const EmailWorkspace: React.FC = () => {
-    const [emails, setEmails] = useState<Email[]>([]);
-    const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+    const {
+        emails, unreadCount, markAsRead, togglePriority,
+        summarizeEmail: summarizeEmailContext, addToCalendar: addToCalendarContext
+    } = useEmail();
+    const { googleToken, setIsEventModalOpen } = useCalendar();
+
+    const [selectedEmailId, setSelectedEmailId] = useState<string | null>(null);
     const [isSummarizing, setIsSummarizing] = useState(false);
     const [activeCategory, setActiveCategory] = useState<EmailCategory | 'all'>('all');
     const [isComposerOpen, setIsComposerOpen] = useState(false);
 
-    useEffect(() => {
-        getEmails().then(setEmails);
-    }, []);
+    const selectedEmail = emails.find(e => e.id === selectedEmailId);
 
     const filteredEmails = activeCategory === 'all'
         ? emails
         : emails.filter(e => e.category === activeCategory);
 
-    const { addEvent, setIsEventModalOpen } = useCalendar();
-
-    const handleSummarize = async (email: Email) => {
-        setIsSummarizing(true);
-        const summary = await summarizeEmail(email.content);
-        setSelectedEmail({ ...email, summary });
-        setIsSummarizing(false);
+    const handleSummarize = (emailId: string) => {
+        summarizeEmailContext(emailId);
     };
 
-    const handleAddToCalendar = (email: Email) => {
-        // Suggest a meeting based on email content
-        const now = new Date();
-        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 10, 0); // Default to tomorrow 10am
-        const end = new Date(start.getTime() + 60 * 60 * 1000);
-
-        const suggestedEvent = {
-            title: email.subject.replace('Meeting Invitation: ', '').replace('Re: ', ''),
-            description: `Suggested from email: ${email.snippet}\n\nOriginal Email Content:\n${email.content}`,
-            start,
-            end,
-            type: 'meeting' as const,
-            recurrence: 'none' as const
-        };
-
-        addEvent(suggestedEvent);
+    const handleAddToCalendar = (emailId: string) => {
+        addToCalendarContext(emailId);
         setIsEventModalOpen(true);
     };
 
@@ -98,8 +83,11 @@ export const EmailWorkspace: React.FC = () => {
                     {filteredEmails.map((email) => (
                         <button
                             key={email.id}
-                            onClick={() => setSelectedEmail(email)}
-                            className={`w-full text-left p-4 rounded-2xl transition-all border relative group ${selectedEmail?.id === email.id
+                            onClick={() => {
+                                setSelectedEmailId(email.id);
+                                markAsRead(email.id);
+                            }}
+                            className={`w-full text-left p-4 rounded-2xl transition-all border relative group ${selectedEmailId === email.id
                                 ? 'bg-white border-blue-200 shadow-lg ring-1 ring-blue-50'
                                 : 'border-transparent hover:bg-slate-50/50'
                                 }`}
@@ -108,11 +96,13 @@ export const EmailWorkspace: React.FC = () => {
                                 <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-full" />
                             )}
                             <div className="flex justify-between items-start mb-1">
-                                <span className={`font-bold text-sm ${selectedEmail?.id === email.id ? 'text-blue-700' : 'text-slate-800'}`}>{email.from}</span>
-                                <span className="text-[10px] text-slate-400 font-medium">{email.timestamp}</span>
+                                <span className={`font-bold text-sm ${selectedEmailId === email.id ? 'text-blue-700' : 'text-slate-800'}`}>{email.sender.name}</span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                    {email.timestamp instanceof Date ? email.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : email.timestamp}
+                                </span>
                             </div>
                             <p className={`text-xs ${!email.isRead ? 'font-bold text-slate-900' : 'font-medium text-slate-600'} truncate`}>{email.subject}</p>
-                            <p className="text-[11px] text-slate-400 truncate mt-1 leading-relaxed">{email.snippet}</p>
+                            <p className="text-[11px] text-slate-400 truncate mt-1 leading-relaxed">{email.body}</p>
 
                             <div className="mt-3 flex gap-2">
                                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${email.category === 'urgent' ? 'bg-red-50 text-red-600 border border-red-100' :
@@ -136,17 +126,17 @@ export const EmailWorkspace: React.FC = () => {
                                 <h2 className="text-2xl font-bold tracking-tight mb-4 text-slate-900">{selectedEmail.subject}</h2>
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center font-bold text-lg text-white shadow-md shadow-red-200">
-                                        {selectedEmail.from[0]}
+                                        {selectedEmail.sender.name[0]}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-slate-700">{selectedEmail.from}</p>
-                                        <p className="text-xs text-slate-400 uppercase tracking-widest font-medium">To me • 2 hours ago</p>
+                                        <p className="text-sm font-bold text-slate-700">{selectedEmail.sender.name}</p>
+                                        <p className="text-xs text-slate-400 uppercase tracking-widest font-medium">To me • {selectedEmail.sender.email} • {selectedEmail.timestamp instanceof Date ? selectedEmail.timestamp.toLocaleTimeString() : selectedEmail.timestamp}</p>
                                     </div>
                                 </div>
                             </div>
                             <div className="flex gap-2">
                                 <button
-                                    onClick={() => handleSummarize(selectedEmail)}
+                                    onClick={() => handleSummarize(selectedEmail.id)}
                                     disabled={isSummarizing}
                                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-white border border-slate-200 text-blue-600 font-bold hover:bg-blue-50 hover:border-blue-100 transition-all disabled:opacity-50 shadow-sm hover:shadow-md text-sm"
                                 >
@@ -155,7 +145,7 @@ export const EmailWorkspace: React.FC = () => {
                                 </button>
                                 {selectedEmail.category === 'meeting' && (
                                     <button
-                                        onClick={() => handleAddToCalendar(selectedEmail)}
+                                        onClick={() => handleAddToCalendar(selectedEmail.id)}
                                         className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 font-bold hover:bg-amber-100 transition-all shadow-sm text-sm"
                                     >
                                         <Calendar className="w-4 h-4" />
@@ -179,14 +169,16 @@ export const EmailWorkspace: React.FC = () => {
                                         <div className="flex items-center gap-2 mb-3 text-blue-600 font-bold text-xs uppercase tracking-widest font-mono">
                                             Executive Summary
                                         </div>
-                                        <p className="text-sm text-slate-700 leading-relaxed font-medium">
-                                            {selectedEmail.summary}
-                                        </p>
+                                        <div className="text-sm text-slate-700 leading-relaxed font-medium">
+                                            <ul className="list-disc ml-4 space-y-1">
+                                                {selectedEmail.summary.mainPoints.map((p, i) => <li key={i}>{p}</li>)}
+                                            </ul>
+                                        </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
                             <div className="text-slate-600 whitespace-pre-wrap leading-relaxed">
-                                {selectedEmail.content}
+                                {selectedEmail.body}
                             </div>
                         </div>
 
@@ -211,6 +203,17 @@ export const EmailWorkspace: React.FC = () => {
                             </div>
                         </div>
                     </>
+                ) : !googleToken ? (
+                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-6 p-12 text-center max-w-md mx-auto">
+                        <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 shadow-xl shadow-blue-500/10">
+                            <Sparkles className="w-10 h-10" />
+                        </div>
+                        <div className="space-y-2">
+                            <h3 className="text-xl font-bold text-slate-800 tracking-tight">Connect Your Google Account</h3>
+                            <p className="text-sm font-medium leading-relaxed">To view and summarize your real emails, you need to sign in with Google. You are currently in simulated mode.</p>
+                        </div>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-[2px]">Please logout and select 'Sign in with Google'</p>
+                    </div>
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-slate-300 gap-4">
                         <div className="p-6 bg-slate-50 rounded-full">
@@ -225,7 +228,7 @@ export const EmailWorkspace: React.FC = () => {
                 isOpen={isComposerOpen}
                 onClose={() => setIsComposerOpen(false)}
                 initialDraft={selectedEmail ? {
-                    to: selectedEmail.from,
+                    to: selectedEmail.sender.email,
                     subject: `Re: ${selectedEmail.subject}`,
                 } : undefined}
             />

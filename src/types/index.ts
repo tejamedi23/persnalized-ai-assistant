@@ -110,7 +110,7 @@ export interface Trip {
 }
 
 // Email Types
-export type EmailCategory = 'meeting' | 'action' | 'fyi' | 'project' | 'client' | 'internal' | 'personal';
+export type EmailCategory = 'meeting' | 'action' | 'fyi' | 'project' | 'client' | 'internal' | 'personal' | 'urgent' | 'updates';
 export type EmailTone = 'professional' | 'friendly' | 'brief' | 'detailed';
 
 export interface EmailAttachment {

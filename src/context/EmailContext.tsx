@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { Email, EmailDraft, EmailCategory, EmailTone, EmailSummary, EmailActionItem } from '../types';
 import { useCalendar } from './CalendarContext';
+import { getEmails } from '../services/EmailService';
+import { analyzeEmailContent } from '../services/LLMService';
 
 interface EmailContextType {
     emails: Email[];
@@ -13,7 +15,7 @@ interface EmailContextType {
     markAsRead: (id: string) => void;
     togglePriority: (id: string) => void;
     deleteEmail: (id: string) => void;
-    summarizeEmail: (id: string) => void;
+    summarizeEmail: (id: string) => Promise<void>;
     scheduleEmail: (draft: EmailDraft, date: Date) => void;
     addToCalendar: (emailId: string) => void;
     extractActionItems: (emailId: string) => void;
@@ -23,34 +25,52 @@ interface EmailContextType {
 const EmailContext = createContext<EmailContextType | undefined>(undefined);
 
 export const EmailProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const { addEvent } = useCalendar();
+    const { addEvent, googleToken } = useCalendar();
     const [emails, setEmails] = useState<Email[]>([]);
     const [drafts, setDrafts] = useState<EmailDraft[]>([]);
     const [scheduledEmails, setScheduledEmails] = useState<Email[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
 
-    // Persistence
+    // Fetch Real Emails from Gmail
+    const fetchRealEmails = async (token: string) => {
+        setIsLoading(true);
+        const realEmails = await getEmails(token);
+        // Map the service Email to the context Email if types differ slightly
+        const formattedEmails: any[] = realEmails.map(e => ({
+            id: e.id,
+            sender: { name: e.from, email: e.from },
+            subject: e.subject,
+            body: e.content,
+            timestamp: e.timestamp.includes(':') ? new Date() : new Date(e.timestamp), // Fallback if string is relative
+            isRead: e.isRead,
+            isPriority: e.category === 'urgent',
+            category: e.category,
+            attachments: [],
+            actionItems: []
+        }));
+        setEmails(formattedEmails);
+        setIsLoading(false);
+    };
+
+    // Persistence & Token Sync
     useEffect(() => {
-        const storedEmails = localStorage.getItem('calendar_emails');
+        if (googleToken) {
+            fetchRealEmails(googleToken);
+        } else {
+            const storedEmails = localStorage.getItem('calendar_emails');
+            if (storedEmails) {
+                setEmails(JSON.parse(storedEmails).map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) })));
+            } else if (!googleToken) {
+                setEmails(generateMockEmails());
+            }
+        }
+
         const storedDrafts = localStorage.getItem('calendar_drafts');
         const storedScheduled = localStorage.getItem('calendar_scheduled');
 
-        try {
-            if (storedEmails) setEmails(JSON.parse(storedEmails).map((e: any) => ({ ...e, timestamp: new Date(e.timestamp) })));
-            if (storedDrafts) setDrafts(JSON.parse(storedDrafts).map((d: any) => ({ ...d, lastSaved: new Date(d.lastSaved) })));
-            if (storedScheduled) setScheduledEmails(JSON.parse(storedScheduled).map((s: any) => ({ ...s, timestamp: new Date(s.timestamp), scheduledFor: new Date(s.scheduledFor) })));
-        } catch (e) {
-            console.error("Failed to parse emails from storage", e);
-            localStorage.removeItem('calendar_emails');
-            localStorage.removeItem('calendar_drafts');
-            localStorage.removeItem('calendar_scheduled');
-        }
-
-        if (!storedEmails) {
-            // Initial mock data if empty
-            const initialEmails = generateMockEmails();
-            setEmails(initialEmails);
-        }
-    }, []);
+        if (storedDrafts) setDrafts(JSON.parse(storedDrafts).map((d: any) => ({ ...d, lastSaved: new Date(d.lastSaved) })));
+        if (storedScheduled) setScheduledEmails(JSON.parse(storedScheduled).map((s: any) => ({ ...s, timestamp: new Date(s.timestamp), scheduledFor: new Date(s.scheduledFor) })));
+    }, [googleToken]);
 
     useEffect(() => {
         localStorage.setItem('calendar_emails', JSON.stringify(emails));
@@ -105,34 +125,30 @@ export const EmailProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const deleteEmail = (id: string) => setEmails(prev => prev.filter(e => e.id !== id));
 
-    const summarizeEmail = (id: string) => {
-        setEmails(prev => prev.map(e => {
-            if (e.id === id) {
-                // Mock AI summarization
-                const summary: EmailSummary = {
-                    mainPoints: [
-                        "Discussion regarding the upcoming Q3 project launch.",
-                        "Need to finalize the marketing budget by EOD Thursday.",
-                        "Team meeting scheduled for next week to review progress."
-                    ],
-                    actionItems: [
-                        "Review the attached budget spreadsheet",
-                        "Approve the final creative assets",
-                        "Sync with the sales team on lead targets"
-                    ],
-                    dates: [
-                        { date: new Date(Date.now() + 86400000 * 2), topic: "Budget Finalization" },
-                        { date: new Date(Date.now() + 86400000 * 5), topic: "Team Progress Review" }
-                    ],
-                    decisionsNeeded: [
-                        "Which vendor should we use for the event?",
-                        "What is the final approval on the social media ad spend?"
-                    ]
-                };
-                return { ...e, summary };
-            }
-            return e;
-        }));
+    const summarizeEmail = async (id: string) => {
+        const email = emails.find(e => e.id === id);
+        if (!email) return;
+
+        try {
+            const analysis = await analyzeEmailContent(email.body);
+
+            setEmails(prev => prev.map(e => {
+                if (e.id === id) {
+                    const summary: EmailSummary = {
+                        mainPoints: analysis.keyInsights,
+                        actionItems: analysis.suggestedActions.filter(a => a.type === 'info').map(a => a.label),
+                        dates: analysis.suggestedActions
+                            .filter(a => a.type === 'schedule')
+                            .map(a => ({ date: new Date(), topic: a.label })), // Rough date extraction
+                        decisionsNeeded: []
+                    };
+                    return { ...e, summary };
+                }
+                return e;
+            }));
+        } catch (error) {
+            console.error("Failed to summarize email:", error);
+        }
     };
 
     const scheduleEmail = (draft: EmailDraft, date: Date) => {

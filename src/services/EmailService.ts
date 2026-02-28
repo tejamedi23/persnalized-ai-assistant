@@ -12,62 +12,69 @@ export interface Email {
     isRead: boolean;
 }
 
-export const getEmails = async (): Promise<Email[]> => {
-    return [
-        {
-            id: '1',
-            from: 'Trip.com',
-            subject: 'Your Flight Booking Confirmation',
-            snippet: 'Thank you for booking with us. Your flight to London is confirmed...',
-            content: 'Hello, your flight from Delhi to London is confirmed for Jan 25th. Seats 22A, 22B. Please check in 3 hours before departure.',
-            timestamp: '2 hours ago',
-            category: 'updates',
-            isRead: false
-        },
-        {
-            id: '2',
-            from: 'Atlas Travel',
-            subject: 'New Flight Options Available',
-            snippet: 'We found some new routes for your upcoming trip to London...',
-            content: 'Based on your recent search, we found flights starting from ₹35,000 for next week.',
-            timestamp: '5 hours ago',
-            category: 'updates',
-            isRead: true
-        },
-        {
-            id: '3',
-            from: 'Project Manager',
-            subject: 'URGENT: API Review Needed',
-            snippet: 'Please review the latest API spec before the EOD...',
-            content: 'Hi Team, we need to finalize the API endpoints for the Calendar AI project. Please take a look at the attached doc.',
-            timestamp: '15 mins ago',
-            category: 'urgent',
-            isRead: false
-        },
-        {
-            id: '4',
-            from: 'Zoom Invitations',
-            subject: 'Meeting Invitation: Quarterly Sync',
-            snippet: 'You have been invited to a meeting...',
-            content: 'Please join us for the Quarterly Business Review on Friday at 2:00 PM.',
-            timestamp: '1 hour ago',
-            category: 'meeting',
-            isRead: false
-        }
-    ];
+export const getEmails = async (token?: string): Promise<Email[]> => {
+    if (!token) {
+        // Fallback to sample data if no token
+        return [
+            {
+                id: '1',
+                from: 'Trip.com',
+                subject: 'Your Flight Booking Confirmation',
+                snippet: 'Thank you for booking with us...',
+                content: 'Hello, your flight from Delhi to London is confirmed for Jan 25th.',
+                timestamp: '2 hours ago',
+                category: 'updates',
+                isRead: false
+            }
+        ];
+    }
+
+    try {
+        // Fetch message list from Gmail
+        const listRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=10&access_token=${token}`);
+        const listData = await listRes.json();
+
+        if (!listData.messages) return [];
+
+        const emails: Email[] = await Promise.all(listData.messages.map(async (m: any) => {
+            const detailRes = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?access_token=${token}`);
+            const detail = await detailRes.json();
+
+            const headers = detail.payload.headers;
+            const subject = headers.find((h: any) => h.name === 'Subject')?.value || 'No Subject';
+            const from = headers.find((h: any) => h.name === 'From')?.value || 'Unknown';
+            const date = headers.find((h: any) => h.name === 'Date')?.value || '';
+
+            return {
+                id: detail.id,
+                from,
+                subject,
+                snippet: detail.snippet,
+                content: detail.snippet, // For deep analysis, we'd need to parse parts, but snippet works for demo
+                timestamp: new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                category: categorizeEmail(subject, detail.snippet),
+                isRead: !detail.labelIds?.includes('UNREAD')
+            };
+        }));
+
+        return emails;
+    } catch (error) {
+        console.error("Gmail fetch failed:", error);
+        return [];
+    }
 };
 
+import { analyzeEmailContent } from './LLMService';
+
 export const summarizeEmail = async (content: string): Promise<string> => {
-    // Simulated AI summarization with more context-aware response
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const analysis = await analyzeEmailContent(content);
 
-    const analysis = content.toLowerCase().includes('urgent')
-        ? "🚨 [CRITICAL ALERT] This message requires immediate action. "
-        : content.toLowerCase().includes('meeting')
-            ? "🗓️ [SCHEDULE UPDATE] Related to upcoming commitments. "
-            : "💡 [AI INSIGHT] Summary of communication: ";
+    // Combine summary and key insights for a rich display
+    const insightsStr = analysis.keyInsights.length > 0
+        ? `\n\n**Key Insights:**\n• ${analysis.keyInsights.join('\n• ')}`
+        : "";
 
-    return `${analysis}${content.substring(0, 80)}... [Full vector analysis completed by Personalized Assistant]`;
+    return `${analysis.summary}${insightsStr}`;
 };
 
 export const categorizeEmail = (subject: string, content: string): EmailCategory => {

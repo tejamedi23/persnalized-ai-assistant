@@ -33,6 +33,7 @@ interface CalendarContextType {
     setIsMeetingFinderOpen: (open: boolean) => void;
     isConflictSidebarOpen: boolean;
     setIsConflictSidebarOpen: (open: boolean) => void;
+    googleToken: string | null;
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -81,6 +82,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // ... rest of provider ...
     const [user, setUser] = useState<User | null>(null);
     const [events, setEvents] = useState<CalendarEvent[]>([]);
+    const [googleToken, setGoogleToken] = useState<string | null>(null);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [conflicts, setConflicts] = useState<Conflict[]>([]);
     const [viewMode, setViewMode] = useState<CalendarViewMode>('week');
@@ -89,17 +91,53 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const [isMeetingFinderOpen, setIsMeetingFinderOpen] = useState(false);
     const [isConflictSidebarOpen, setIsConflictSidebarOpen] = useState(false);
 
+    // Fetch Real Events from Google
+    const fetchGoogleEvents = async (token: string) => {
+        try {
+            const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?access_token=${token}`);
+
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.warn("Google token expired. Clearing session.");
+                    setGoogleToken(null);
+                    localStorage.removeItem('google_token');
+                }
+                return;
+            }
+
+            const data = await response.json();
+            if (data.items) {
+                const googleEvents = data.items.map((item: any) => ({
+                    id: item.id,
+                    title: item.summary || 'No Title',
+                    description: item.description || '',
+                    start: new Date(item.start.dateTime || item.start.date),
+                    end: new Date(item.end.dateTime || item.end.date),
+                    type: 'meeting'
+                }));
+                setEvents(googleEvents);
+                localStorage.setItem('calendar_events', JSON.stringify(googleEvents));
+            }
+        } catch (error) {
+            console.error("Failed to fetch Google events:", error);
+        }
+    };
+
     // Load from local storage on mount
     useEffect(() => {
         const storedUser = localStorage.getItem('calendar_user');
         const storedEvents = localStorage.getItem('calendar_events');
         const storedTheme = localStorage.getItem('calendar_theme') as Theme;
+        const storedToken = localStorage.getItem('google_token');
 
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
 
-        if (storedEvents) {
+        if (storedToken) {
+            setGoogleToken(storedToken);
+            fetchGoogleEvents(storedToken);
+        } else if (storedEvents) {
             try {
                 const parsedEvents = JSON.parse(storedEvents).map((e: any) => ({
                     ...e,
@@ -110,6 +148,11 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             } catch (e) {
                 console.error("Failed to parse calendar events from storage", e);
                 localStorage.removeItem('calendar_events');
+                setEvents([]); // Better than mock data if user is logged in
+            }
+        } else {
+            // Only generate samples for true "New User" (unauthenticated)
+            if (!storedToken) {
                 setEvents(generateSampleEvents());
             }
         }
@@ -150,6 +193,14 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }, [user]);
 
     useEffect(() => {
+        if (googleToken) {
+            localStorage.setItem('google_token', googleToken);
+        } else {
+            localStorage.removeItem('google_token');
+        }
+    }, [googleToken]);
+
+    useEffect(() => {
         if (events.length > 0) {
             localStorage.setItem('calendar_events', JSON.stringify(events));
 
@@ -158,21 +209,37 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
     }, [events]);
 
-    const login = (name: string, email: string) => {
-        const newUser = { id: uuidv4(), name, email, avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff` };
+    const login = (name: string, email: string, avatar?: string, token?: string) => {
+        const newUser = {
+            id: uuidv4(),
+            name,
+            email,
+            avatar: avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=2563EB&color=fff`
+        };
         setUser(newUser);
 
-        const storedEvents = localStorage.getItem('calendar_events');
-        if (!storedEvents) {
-            const samples = generateSampleEvents();
-            setEvents(samples);
-            localStorage.setItem('calendar_events', JSON.stringify(samples));
+        if (token) {
+            setGoogleToken(token);
+            fetchGoogleEvents(token);
+        } else {
+            const storedEvents = localStorage.getItem('calendar_events');
+            if (!storedEvents) {
+                const samples = generateSampleEvents();
+                setEvents(samples);
+                localStorage.setItem('calendar_events', JSON.stringify(samples));
+            }
         }
     };
 
     const logout = () => {
         setUser(null);
+        setGoogleToken(null);
+        setEvents([]);
         localStorage.removeItem('calendar_user');
+        localStorage.removeItem('google_token');
+        localStorage.removeItem('calendar_events');
+        localStorage.removeItem('calendar_emails');
+        window.location.reload(); // Hard reset for clean state
     };
 
     const addEvent = (eventData: Omit<CalendarEvent, 'id'>) => {
@@ -246,7 +313,8 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
             isMeetingFinderOpen,
             setIsMeetingFinderOpen,
             isConflictSidebarOpen,
-            setIsConflictSidebarOpen
+            setIsConflictSidebarOpen,
+            googleToken
         }}>
             {children}
         </CalendarContext.Provider>

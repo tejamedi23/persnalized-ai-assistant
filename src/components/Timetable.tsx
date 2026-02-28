@@ -3,34 +3,44 @@ import { format, startOfWeek, addDays, isSameDay } from 'date-fns';
 import { useCalendar } from '../context/CalendarContext';
 import { Clock, BookOpen, User, Briefcase, Upload, CheckCircle2 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { extractScheduleFromImage } from '../services/LLMService';
 
 export const Timetable: React.FC = () => {
-    const { events, currentDate, addEvent } = useCalendar();
+    const { events, currentDate, addEvent, setCurrentDate } = useCalendar();
     const [isSyncing, setIsSyncing] = React.useState(false);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const startDate = startOfWeek(currentDate, { weekStartsOn: 1 });
     const weekDays = Array.from({ length: 5 }, (_, i) => addDays(startDate, i)); // Mon-Fri
     const timeSlots = Array.from({ length: 10 }, (_, i) => i + 8); // 8 AM to 5 PM
 
-    const handleUpload = async () => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
         setIsSyncing(true);
-        // Simulate parsing and syncing
-        await new Promise(r => setTimeout(r, 1500));
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64 = reader.result as string;
+            const aiEvents = await extractScheduleFromImage(base64, currentDate);
 
-        // Add a mock event from "uploaded timetable"
-        const nextMonday = addDays(startDate, 0);
-        nextMonday.setHours(10, 0, 0, 0);
-        const nextMondayEnd = new Date(nextMonday);
-        nextMondayEnd.setHours(11, 0, 0, 0);
+            if (aiEvents && aiEvents.length > 0) {
+                aiEvents.forEach(evt => {
+                    addEvent({
+                        ...evt,
+                        start: new Date(evt.start),
+                        end: new Date(evt.end)
+                    });
+                });
+                // Auto-navigate to the first event's week
+                setCurrentDate(new Date(aiEvents[0].start));
+            }
+            setIsSyncing(false);
+        };
+        reader.readAsDataURL(file);
+    };
 
-        addEvent({
-            title: "Imported Class: Data Structures",
-            description: "Automatically synced from uploaded Timetable",
-            start: nextMonday,
-            end: nextMondayEnd,
-            type: 'meeting'
-        });
-
-        setIsSyncing(false);
+    const handleUploadClick = () => {
+        if (fileInputRef.current) fileInputRef.current.click();
     };
 
     const getEventForSlot = (day: Date, hour: number) => {
@@ -50,6 +60,13 @@ export const Timetable: React.FC = () => {
 
     return (
         <div className="flex flex-col h-full bg-slate-50 p-6 overflow-hidden">
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept="image/*"
+                className="hidden"
+            />
             <div className="mb-6 flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Weekly Timetable</h2>
@@ -57,7 +74,7 @@ export const Timetable: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={handleUpload}
+                        onClick={handleUploadClick}
                         disabled={isSyncing}
                         className={clsx(
                             "flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all",
@@ -67,7 +84,7 @@ export const Timetable: React.FC = () => {
                         {isSyncing ? (
                             <>
                                 <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                                Syncing...
+                                Analyzing...
                             </>
                         ) : (
                             <>

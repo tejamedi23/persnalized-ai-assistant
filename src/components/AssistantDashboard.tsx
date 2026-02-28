@@ -8,6 +8,7 @@ import { Dashboard } from './Dashboard';
 import { QuickAddBar } from './QuickAddBar';
 import { NotificationCenter } from './NotificationCenter';
 import { useCalendar } from '../context/CalendarContext';
+import { useEmail } from '../context/EmailContext';
 import { format, startOfWeek, addDays } from 'date-fns';
 
 import { useAI } from '../context/AIContext';
@@ -47,6 +48,8 @@ export const AssistantDashboard: React.FC = () => {
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
+
+    const { unreadCount } = useEmail();
 
     return (
         <div className="flex h-screen w-full bg-brand-bg text-brand-text overflow-hidden font-sans">
@@ -90,8 +93,8 @@ export const AssistantDashboard: React.FC = () => {
                             {activeTab === tab.id && <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full" />}
                             <tab.icon className={clsx("w-5 h-5 transition-colors", activeTab === tab.id ? "text-blue-600" : "group-hover:text-slate-700")} />
                             <span className="hidden lg:block">{tab.label}</span>
-                            {tab.id === 'mail' && (
-                                <span className="hidden lg:flex ml-auto bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">4</span>
+                            {tab.id === 'mail' && unreadCount > 0 && (
+                                <span className="hidden lg:flex ml-auto bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">{unreadCount}</span>
                             )}
                         </button>
                     ))}

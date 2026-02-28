@@ -11,6 +11,7 @@ import {
     addMinutes,
     isAfter
 } from 'date-fns';
+import { model } from '../services/LLMService';
 
 interface AIContextType {
     messages: ChatMessage[];
@@ -38,7 +39,7 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
                 {
                     id: 'welcome',
                     role: 'assistant',
-                    content: "Hi Teja! I'm your AI Assistant. I can help you manage your calendar, draft emails, and track your trips. What can I do for you today?",
+                    content: `Hi! I'm your Personalized AI Assistant. I've synced your calendar and emails. What can I do for you today?`,
                     timestamp: new Date(),
                     actions: [
                         { id: 'a1', label: "What's on my schedule?", type: 'search', payload: { query: 'schedule today' } },
@@ -172,89 +173,39 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
     const processCommand = async (content: string) => {
         setIsTyping(true);
-        await new Promise(resolve => setTimeout(resolve, 800));
 
-        const query = content.toLowerCase();
+        try {
+            const prompt = `
+                You are a professional AI Executive Assistant named Personalized AI Assistant. 
+                You help the user with their calendar, emails, and travel.
+                Current Context:
+                - Unread Emails: ${unreadCount}
+                - Upcoming Events: ${events.length}
+                
+                Important: Use a professional, helpful tone. If the user asks about their schedule or mail, be specific.
+                User Message: "${content}"
+            `;
 
-        // Time Zone Awareness
-        if (query.includes('timezone') || query.includes('pst') || query.includes('ist') || query.includes('gmt') || query.includes('london')) {
-            const aiMessage: ChatMessage = {
-                id: Date.now().toString(),
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const responseText = response.text();
+
+            addMessage({
+                id: Math.random().toString(36).substring(2, 9),
                 role: 'assistant',
-                content: `🌐 **Time Zone Conversion Detected**\n\nI've analyzed your query and converted the times to your local IST zone:\n- **10:00 AM PST** ➔ **11:30 PM IST**\n- **4:00 PM GMT** ➔ **9:30 PM IST**\n\nWould you like me to schedule a meeting using these converted times?`,
+                content: responseText,
+                timestamp: new Date(),
+                actions: [] // We can expand this to include dynamic actions later
+            });
+        } catch (error) {
+            console.error("Gemini Chat failed:", error);
+            addMessage({
+                id: Math.random().toString(36).substring(2, 9),
+                role: 'assistant',
+                content: "I'm sorry, I'm having trouble connecting to my brain right now. Please try again in a moment.",
                 timestamp: new Date()
-            };
-            setMessages(prev => [...prev, aiMessage]);
-            setIsTyping(false);
-            return;
+            });
         }
-
-        let responseContent = "";
-        let actions: AIAction[] = [];
-
-        // 1. App-Specific Data Integration
-        if (query.includes('next') && (query.includes('meeting') || query.includes('event'))) {
-            setLastTopic('calendar');
-            const now = new Date();
-            const nextEvent = events.filter(e => isAfter(new Date(e.start), now))
-                .sort((a, b) => new Date(a.start).getTime() - new Date(b.start).getTime())[0];
-
-            if (nextEvent) {
-                responseContent = `Your next meeting is "${nextEvent.title}" at ${format(new Date(nextEvent.start), 'HH:mm')}. Would you like the location?`;
-                actions.push({ id: 'loc1', label: 'View Details', type: 'info', payload: { eventId: nextEvent.id } });
-            } else {
-                responseContent = "You don't have any more meetings scheduled for today.";
-            }
-        }
-        else if (query.includes('summarize') || query.includes('email') || query.includes('mail')) {
-            setLastTopic('email');
-            responseContent = `You have ${unreadCount} unread emails. Your most urgent one is from Sarah Miller about the Q3 Strategy. Should I draft a reply?`;
-            actions.push({ id: 'email-sum', label: 'Summarize Urgent', type: 'email', payload: { action: 'summarize_urgent' }, isPrimary: true });
-        }
-        else if (query.includes('travel') || query.includes('flight') || query.includes('trip')) {
-            setLastTopic('travel');
-            const trip = trips[0];
-            if (trip) {
-                responseContent = `Your trip to ${trip.destination} is scheduled for ${format(new Date(trip.startDate), 'MMM do')}. I can check the flight status or local weather.`;
-                actions.push({ id: 'tr1', label: 'Check Status', type: 'travel', payload: { tripId: trip.id } });
-            } else {
-                responseContent = "No upcoming trips found. Want to search for a new destination?";
-                actions.push({ id: 'tr3', label: 'Search Travel', type: 'travel', payload: { action: 'open_search' }, isPrimary: true });
-            }
-        }
-        // 2. Timetable related
-        else if (query.includes('timetable') || query.includes('class') || query.includes('lecture')) {
-            responseContent = "I've organized your weekly timetable. You can see your full commitment block in the dedicated Timetable view.";
-            actions.push({ id: 'tt1', label: 'Open Timetable', type: 'schedule', payload: { action: 'switch_to_timetable' }, isPrimary: true });
-        }
-        // 3. User Identity Integration
-        else if (query.includes('who am i') || query.includes('my profile')) {
-            if (user) {
-                responseContent = `You are logged in as **${user.name}** (${user.email}). You're currently on the Pro Plan.`;
-            } else {
-                responseContent = "You're currently browsing as a guest. Please sign in with Google to sync your personal assistant!";
-                actions.push({ id: 'login-suggest', label: 'Sign in with Google', type: 'info', payload: { action: 'login' }, isPrimary: true });
-            }
-        }
-        // 4. General Knowledge / Universal Assistant (Simulated)
-        else if (query.includes('weather')) {
-            responseContent = "It's currently 22°C and sunny in your location. Perfect weather for that focus block you have later!";
-        }
-        else if (query.includes('hello') || query.includes('hi')) {
-            responseContent = user ? `Hi ${user.name.split(' ')[0]}! I'm your Personalized AI Assistant. How can I help you optimize your day?` : "Hello! I'm your Personalized AI Assistant. Please sign in to get started, or ask me anything!";
-        }
-        else {
-            // General "Universal" response for anything else
-            responseContent = `I've looked into "${content}". While I'm still expanding my knowledge for specific topics, I can help you manage your Google ecosystem data or find information related to your productivity! Try asking about your emails or schedule.`;
-        }
-
-        addMessage({
-            id: Math.random().toString(36).substring(2, 9),
-            role: 'assistant',
-            content: responseContent,
-            timestamp: new Date(),
-            actions
-        });
 
         setIsTyping(false);
     };

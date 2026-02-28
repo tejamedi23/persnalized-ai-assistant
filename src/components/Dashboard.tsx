@@ -97,7 +97,11 @@ export const Dashboard: React.FC = () => {
                 {['day', 'week', 'month', 'agenda', 'timetable'].includes(viewMode) && (
                     <aside className="w-80 border-l border-slate-100 bg-white hidden xl:flex flex-col shrink-0 z-10 p-6 overflow-y-auto custom-scrollbar">
                         <MiniCalendar />
-                        <ConflictSidebar onClose={() => { }} />
+                        {isConflictSidebarOpen && (
+                            <div className="mt-8 border-t border-slate-100 pt-8">
+                                <ConflictSidebar onClose={() => setIsConflictSidebarOpen(false)} inline />
+                            </div>
+                        )}
                     </aside>
                 )}
             </div>
