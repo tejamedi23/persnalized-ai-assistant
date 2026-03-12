@@ -55,4 +55,4 @@ A premium, "World-Class" aesthetic designed for high-performers.
 - [ ] Mobile Companion App
 
 ---
-*Designed and Built by Teja Medi.*
+*Designed and Built by Tej and boys
