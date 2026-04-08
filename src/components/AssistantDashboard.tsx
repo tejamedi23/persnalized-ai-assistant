@@ -16,10 +16,17 @@ import { useAIInsights } from '../hooks/useAIInsights';
 import { MessageSquareText } from 'lucide-react';
 
 export const AssistantDashboard: React.FC = () => {
-    const { proactiveSuggestions, executeAction } = useAI();
+    const { proactiveSuggestions, executeAction, sendMessage, messages, isTyping } = useAI();
     const [activeTab, setActiveTab] = useState<'mail' | 'schedule' | 'travel'>('schedule');
     const [isAIDrawerOpen, setIsAIDrawerOpen] = useState(false);
     const [chatInput, setChatInput] = useState('');
+    const [aiInput, setAiInput] = useState('');
+
+    const handleAISend = () => {
+        if (!aiInput.trim() || isTyping) return;
+        sendMessage(aiInput);
+        setAiInput('');
+    };
     const {
         currentDate, next, prev, goToToday,
         viewMode, setViewMode,
@@ -351,16 +358,36 @@ export const AssistantDashboard: React.FC = () => {
                                 </div>
 
                                 <div className="space-y-3">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Universal Command</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">Ask AI Anything</p>
+                                    {/* AI Chat Messages */}
+                                    <div className="max-h-48 overflow-y-auto space-y-3 custom-scrollbar">
+                                        {messages.filter(m => m.role === 'assistant').slice(-3).map((msg) => (
+                                            <div key={msg.id} className="p-3 bg-blue-50 border border-blue-100 rounded-2xl">
+                                                <p className="text-xs text-slate-700 leading-relaxed font-medium">{msg.content}</p>
+                                            </div>
+                                        ))}
+                                        {isTyping && (
+                                            <div className="p-3 bg-slate-50 border border-slate-100 rounded-2xl flex gap-1">
+                                                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                                <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="relative group">
                                         <input
                                             type="text"
                                             placeholder="Ask anything..."
                                             className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 pr-12 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-sm font-medium text-slate-800"
-                                            value={chatInput}
-                                            onChange={(e) => setChatInput(e.target.value)}
+                                            value={aiInput}
+                                            onChange={(e) => setAiInput(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleAISend()}
                                         />
-                                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all">
+                                        <button
+                                            onClick={handleAISend}
+                                            disabled={!aiInput.trim() || isTyping}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2.5 rounded-xl bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 disabled:bg-slate-300 transition-all"
+                                        >
                                             <Send className="w-4 h-4" />
                                         </button>
                                     </div>

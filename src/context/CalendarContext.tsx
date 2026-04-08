@@ -244,7 +244,7 @@ export const CalendarProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
     const addEvent = (eventData: Omit<CalendarEvent, 'id'>) => {
         const newEvent: CalendarEvent = { ...eventData, id: uuidv4() };
-        setEvents([...events, newEvent]);
+        setEvents(prev => [...prev, newEvent]);
     };
 
     const updateEvent = (updatedEvent: CalendarEvent) => {

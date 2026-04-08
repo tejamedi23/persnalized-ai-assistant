@@ -188,21 +188,26 @@ export const AIProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
             const result = await model.generateContent(prompt);
             const response = await result.response;
-            const responseText = response.text();
+            const responseText = response.text() || 'No response received.';
 
             addMessage({
                 id: Math.random().toString(36).substring(2, 9),
                 role: 'assistant',
                 content: responseText,
                 timestamp: new Date(),
-                actions: [] // We can expand this to include dynamic actions later
+                actions: []
             });
-        } catch (error) {
-            console.error("Gemini Chat failed:", error);
+        } catch (error: any) {
+            const errorMsg = error?.message || '';
+            const isQuotaError = errorMsg.includes('429') || errorMsg.includes('quota') || errorMsg.includes('RESOURCE_EXHAUSTED');
+            
+            console.error("Gemini Chat failed:", errorMsg);
             addMessage({
                 id: Math.random().toString(36).substring(2, 9),
                 role: 'assistant',
-                content: "I'm sorry, I'm having trouble connecting to my brain right now. Please try again in a moment.",
+                content: isQuotaError
+                    ? `I'm currently experiencing high demand. Here's what I can tell you locally:\n\n📅 You have **${events.length} events** on your calendar.\n📧 You have **${unreadCount} unread emails**.\n\nThe AI service will be available again shortly. Please try again in a minute!`
+                    : `Sorry, I encountered an issue: ${errorMsg || 'Please try again.'}`,
                 timestamp: new Date()
             });
         }
