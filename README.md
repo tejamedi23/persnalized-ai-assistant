@@ -1,4 +1,4 @@
-# Orbit - Personalized AI Executive Assistant
+ Personalized AI Executive Assistant
 
 **Orbit** is a next-generation productivity workspace that unifies your calendar, email, and travel plans into a single, intelligent "Stage."
 
@@ -55,4 +55,4 @@ A premium, "World-Class" aesthetic designed for high-performers.
 - [ ] Mobile Companion App
 
 ---
-*Designed and Built by Teja Medi.*
+*Designed and Built by Tej and boys
